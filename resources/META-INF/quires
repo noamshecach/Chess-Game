@@ -1,0 +1,9 @@
+select * 
+from USERS
+
+update USERS
+set IS_LOGGED_IN = 0
+where USER_NAME = 'noam'
+
+update USERS
+set IS_LOGGED_IN = 0

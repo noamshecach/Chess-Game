@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Tools>
+	<Rook>
+		<id>1</id>
+		<color>white</color>
+		<Xposition>0</Xposition>
+		<Yposition>0</Yposition>
+	</Rook>
+	<Rook>
+		<id>8</id>
+		<color>white</color>
+		<Xposition>7</Xposition>
+		<Yposition>0</Yposition>
+	</Rook>
+	<Knight>
+		<id> 2 </id>
+		<color>white</color>
+		<Xposition>1</Xposition>
+		<Yposition>0</Yposition>
+	</Knight>
+	<Knight>
+		<id> 7 </id>
+		<color>white</color>
+		<Xposition>6</Xposition>
+		<Yposition>0</Yposition>
+	</Knight>
+	<Bishop>
+		<id> 3 </id>
+		<color>white</color>
+	<Xposition>2</Xposition>
+	<Yposition>0</Yposition>
+	</Bishop>
+	<Bishop>
+		<id> 4 </id>
+		<color>white</color>
+		<Xposition>5</Xposition>
+		<Yposition>0</Yposition>
+	</Bishop>
+	<King>
+		<id> 5 </id>
+		<color>white</color>
+		<Xposition>4</Xposition>
+		<Yposition>0</Yposition>
+	</King>
+	<Queen>
+		<id> 6 </id>
+		<color>white</color>
+		<Xposition>3</Xposition>
+		<Yposition>0</Yposition>
+	</Queen>
+	<Pawn>
+		<id> 9 </id>
+		<color>white</color>
+		<Xposition>0</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 10 </id>
+		<color>white</color>
+		<Xposition>1</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 11 </id>
+		<color>white</color>
+		<Xposition>2</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 12 </id>
+		<color>white</color>
+		<Xposition>3</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 13 </id>
+		<color>white</color>
+		<Xposition>4</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 14 </id>
+		<color>white</color>
+		<Xposition>5</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 15 </id>
+		<color>white</color>
+		<Xposition>6</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 16 </id>
+		<color>white</color>
+		<Xposition>7</Xposition>
+		<Yposition>1</Yposition>
+	</Pawn>
+	<Rook>
+		<id>1</id>
+		<color>black</color>
+		<Xposition>0</Xposition>
+		<Yposition>7</Yposition>
+	</Rook>
+	<Rook>
+		<id>8</id>
+		<color>black</color>
+		<Xposition>7</Xposition>
+		<Yposition>7</Yposition>
+	</Rook>
+	<Knight>
+		<id>2</id>
+		<color>black</color>
+		<Xposition>1</Xposition>
+		<Yposition>7</Yposition>
+	</Knight>
+	<Knight>
+		<id>7</id>
+		<color>black</color>
+		<Xposition>6</Xposition>
+		<Yposition>7</Yposition>
+	</Knight>
+	<Bishop>
+		<id>3</id>
+		<color>black</color>
+		<Xposition>2</Xposition>
+		<Yposition>7</Yposition>
+	</Bishop>
+	<Bishop>
+		<id>4</id>
+		<color>black</color>
+		<Xposition>5</Xposition>
+		<Yposition>7</Yposition>
+	</Bishop>
+	<King>
+		<id>5</id>
+		<color>black</color>
+		<Xposition>4</Xposition>
+		<Yposition>7</Yposition>
+	</King>
+	<Queen>
+		<id>6</id>
+		<color>black</color>
+		<Xposition>3</Xposition>
+		<Yposition>7</Yposition>
+	</Queen>
+	<Pawn>
+		<id>9</id>
+		<color>black</color>
+		<Xposition>0</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+	<Pawn>
+		<id>10</id>
+		<color>black</color>
+		<Xposition>1</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+	<Pawn>
+		<id> 11 </id>
+		<color>black</color>
+		<Xposition>2</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+	<Pawn>
+		<id>12</id>
+		<color>black</color>
+		<Xposition>3</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+	<Pawn>
+		<id>13</id>
+		<color>black</color>
+		<Xposition>4</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+	<Pawn>
+		<id>14</id>
+		<color>black</color>
+		<Xposition>5</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+	<Pawn>
+		<id>15</id>
+		<color>black</color>
+		<Xposition>6</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+	<Pawn>
+		<id>16</id>
+		<color>black</color>
+		<Xposition>7</Xposition>
+		<Yposition>6</Yposition>
+	</Pawn>
+</Tools>
