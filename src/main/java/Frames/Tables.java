@@ -10,6 +10,7 @@ import SentObjects.InitialSetup;
 import SystemMessage.Message;
 import Timer.Timer;
 
+//View component - displays game tables.
 public class Tables extends GeneralJFrame  {
 
 	private static final long serialVersionUID = 1L;
@@ -19,22 +20,16 @@ public class Tables extends GeneralJFrame  {
 	private BarName barName;
 	private JLabel[] tables;
 	private ImageIcon[] tableImgs;
-	
-	private MouseHandler mouseHandler;
-	private ImageIcon highScoreImg = new ImageIcon(getClass().getResource( "/media/tables/highscore.png"));
-	private ImageIcon collectCoinsImg = new ImageIcon(getClass().getResource( "/media/tables/buttonCollectYourBonusREK.png"));
-	private ImageIcon rightArrowImg = new ImageIcon(getClass().getResource( "/media/tables/rightArrow.png"));
-	private ImageIcon leftArrowImg = new ImageIcon(getClass().getResource( "/media/tables/leftArrow.png"));
 	private int screen = 0;
 	private String username;
 	
 	public Tables(ContactServer contactServer, String username) {
 		
 		super("/media/tables/background.png");
-		this.mouseHandler = new MouseHandler();
+		MouseHandler mouseHandler = new MouseHandler();
 		this.username = username;
 	    this.contactServer = contactServer;
-	    initialize();
+	    initializeComponents();
 	    	    
 	    int[] locations = {660,934,1208,1480};
 	    for(int i = 0; i < tables.length; i++) {
@@ -42,6 +37,11 @@ public class Tables extends GeneralJFrame  {
 	    	addLabel(tables[i], locations[i], 286, tableImgs[i],mouseHandler);
 	    }
 		
+	    ImageIcon highScoreImg = new ImageIcon(getClass().getResource( "/media/tables/highscore.png"));
+	    ImageIcon collectCoinsImg = new ImageIcon(getClass().getResource( "/media/tables/buttonCollectYourBonusREK.png"));
+	    ImageIcon rightArrowImg = new ImageIcon(getClass().getResource( "/media/tables/rightArrow.png"));
+	    ImageIcon leftArrowImg = new ImageIcon(getClass().getResource( "/media/tables/leftArrow.png"));
+	    
 		addLabel(leftArrow, 555, 599, leftArrowImg,mouseHandler);
 		addLabel(rightArrow, 1754, 599, rightArrowImg,mouseHandler);
 		addLabel(exit, 1517, 969, exitImg,mouseHandler);
@@ -49,11 +49,11 @@ public class Tables extends GeneralJFrame  {
 	    addLabel(collectCoins, 850, 953, collectCoinsImg, mouseHandler);    
 	    addBarName(barName, 0, 0);
 	    
-	    getPlayerImage();
+	    setPlayerImage();
 		setVisible(true);
 	}
 	
-	public void initialize() {
+	public void initializeComponents() {
 		exit = new JLabel();
 		highScore = new JLabel();
 		originalPlayerImage = new JLabel();
@@ -68,7 +68,7 @@ public class Tables extends GeneralJFrame  {
 	    	tableImgs[i] = new ImageIcon(getClass().getResource("/media/tables/table"+ (i + 1) +"00.png"));
 	}
 	
-	public void getPlayerImage() {
+	public void setPlayerImage() {
 		String s = contactServer.getClientImage();
 		ImageIcon playerImageImg = new ImageIcon(getClass().getResource(s));
 	    originalPlayerImage = new JLabel();
@@ -92,7 +92,7 @@ public class Tables extends GeneralJFrame  {
 					System.out.println("Error in logout");
 			}
 			if(highScore == arg0.getSource()) {
-				HighScore highscore = new HighScore(Tables.this, contactServer, username);
+				new HighScore(Tables.this, contactServer, username);
 				setVisible(false);
 			}	
 			if(collectCoins == arg0.getSource()) {

@@ -15,12 +15,12 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.SAXException;
 import com.noam.jpa_project.Server.DataBaseAccess;
+import com.noam.jpa_project.Server.HighScoreData;
 import com.noam.jpa_project.Server.UserAccount;
 import JMS.CreateQueue;
 import Logic.Board;
 import Logic.Colors;
 import Logic.Game;
-import Logic.Player;
 import Logic.XMLRead;
 import SentObjects.AbstractTool;
 import SentObjects.AvailableMoves;
@@ -30,10 +30,11 @@ import SentObjects.Movement;
 public class ServerService extends UnicastRemoteObject implements IServerService, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private int[] gamesWaitingToStart;
+	private Game[] gamesWaitingToStart;
 	private Hashtable<Integer, Game> games = new Hashtable<Integer, Game>();
+	
 	private final int numberOfTables = 10;
-	private int index = 1;
+	private int index = 1; 
 	private DataBaseAccess db;
 	
 	public ServerService(Registry registry, String name) throws RemoteException {
@@ -45,47 +46,54 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 		this.db = new DataBaseAccess();
 		
 		// Defining waiting queues  (tables array) 
-		this.gamesWaitingToStart = new int[numberOfTables]; 
+		this.gamesWaitingToStart = new Game[numberOfTables]; 
+		for(int i = 0; i < numberOfTables; i++)
+			gamesWaitingToStart[i] = new Game();
 	}
 
+	//This function checks if there is a waiting opponent on the requested table.
+	//If there is - the game will start immediately and the game details will be returned via InitialSetup object.
+	//Otherwise, the player will wait for an opponent.
 	@Override
-	public InitialSetup findOpponent(String username, int tableNumber) throws InterruptedException, ParserConfigurationException, SAXException, IOException {
-		Game game;
+	public InitialSetup findOpponent(String username, int tableNumber) throws InterruptedException, ParserConfigurationException, SAXException, IOException {		
+		Game game = gamesWaitingToStart[tableNumber];
 		Colors color1 , color2;
 		int gameIdx;
-		if(gamesWaitingToStart[tableNumber] != 0) {
-			synchronized(games) {
-				gameIdx = gamesWaitingToStart[tableNumber];
-				game = games.get(gameIdx);
-				gamesWaitingToStart[tableNumber] = 0;
+		synchronized(game) {
+			gameIdx = game.getGameIndex();
+			if(gameIdx != 0) {  
+				//There is waiting player
+				gamesWaitingToStart[tableNumber] = new Game();
+				
+				//Machine opponent
 				if(username.equals("Computer")) {
 					game.startGameVSComputer();
 					game.setAgainstComputer(true);
-					games.notify();
+					game.notify();
 					return null;
 				}
+				
+				//Human opponent
 				game.startGame(username);
 				color1 = game.getPlayer(1).getColor();
 				new CreateQueue(game.getUsernames());
-				games.notify();
-			}
-			return new InitialSetup(getAbstractToolList(color1), !game.getTurn(), color1, 
-					new ImageIcon(getClass().getResource(db.getClientImage(game.getPlayer(0).getUsername()))), game.getPlayer(0).getUsername(), gameIdx, 1);
-			
-		}else {
-			synchronized(games) {
-				game = new Game(username, index, (tableNumber + 1) * 100);
+				game.notify();
+				return new InitialSetup(getAbstractToolList(color1), !game.getTurn(), color1, 
+						new ImageIcon(getClass().getResource(db.getClientImage(game.getPlayer(0).getUsername()))), game.getPlayer(0).getUsername(), gameIdx, 1);
+			}else {
+				
+				//You are the first player in the table
+				game.initialize(username, index, (tableNumber + 1) * 100);
 				games.put(index, game);
-				gameIdx = index;
-				gamesWaitingToStart[tableNumber] = index++;
-				games.wait();
+				gameIdx = index++;
+				game.wait();
 				color2 = game.getPlayer(0).getColor();
+				if(game.getPlayer(1).getUsername().equals("Computer"))
+					return new InitialSetup(getAbstractToolList(color2), game.getTurn(), color2, new ImageIcon(getClass().getResource("/media/playersImage/02.png")), "Computer", gameIdx, 0);
+				else
+					return new InitialSetup(getAbstractToolList(color2), game.getTurn(), color2, 
+							new ImageIcon(getClass().getResource(db.getClientImage(game.getPlayer(1).getUsername()))), game.getPlayer(1).getUsername(), gameIdx, 0);
 			}
-			if(game.getPlayer(1).getUsername().equals("Computer"))
-				return new InitialSetup(getAbstractToolList(color2), game.getTurn(), color2, new ImageIcon(getClass().getResource("/media/playersImage/02.png")), "Computer", gameIdx, 0);
-			else
-				return new InitialSetup(getAbstractToolList(color2), game.getTurn(), color2, 
-						new ImageIcon(getClass().getResource(db.getClientImage(game.getPlayer(1).getUsername()))), game.getPlayer(1).getUsername(), gameIdx, 0);
 		}
 	}
 	
@@ -98,6 +106,8 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 		return userhandler.getAbstractToolList();
 	}
 
+	//Each game object has field of Board object.
+	//The board object has a method 'getPossibleMoves' that returns the available moves to the specified tool.
 	@Override
 	public AvailableMoves getPossibleMoves(int col, int row, int gameIdx, int player) throws RemoteException {
 		if(games.get(gameIdx).getCurrentPlayerColor() == Colors.WHITE)
@@ -106,6 +116,7 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 			return games.get(gameIdx).getBoard().getPossibleMoves(7 - col, row);
 	}
 
+	//This function make the requested move and updates the move on the field 'lastMove' in the game object for the opponent.
 	@Override
 	public Movement performeMove(Point curSq, Point toSq, int gameIdx, int player) throws RemoteException {
 		Movement move;
@@ -125,29 +136,31 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 		return move;
 	}
 
-	
+	// This function gets the opponent move via 'LastMove' field in the Game object.
+	// If the opponent is human you will wait for his move.
 	@Override
 	public Movement requestOpponentMove(int gameIdx, int playerIdx) throws RemoteException, InterruptedException {
 		synchronized(games.get(gameIdx)) {
 			if(games.get(gameIdx).isAgainstComputer()) {
-				
+				//Against computer
 				Movement move = games.get(gameIdx).getBoard().requestComputerMove(games.get(gameIdx).getPlayers(), games.get(gameIdx));
-				//games.get(gameIdx).getBoard().printBoard();
-				//customizeCoordinatesToUser(move, gameIdx);
 				games.get(gameIdx).setLastMove(move);
 				games.get(gameIdx).changeTurn();
 				
-			}else 
-			{
+			}else {
 				if(!  ((games.get(gameIdx).getTurn() && playerIdx == 0) ||
 						(!games.get(gameIdx).getTurn() && playerIdx == 1)	))
+					//Against Human - wait for movement
 					games.get(gameIdx).wait();
 			}
 		}
-		
 		return 	customizeCoordinatesToUser(games.get(gameIdx).getLastMove(), gameIdx);
 	}
 	
+	//The server uses double walls all around the board to avoid handling board exceptions.
+	//Therefore all the indexes bigger than their original value by 2.
+	//In Addition the UI display the user tools near him (at the bottom of the screen).
+	//This function adapts the coordinates to fit to the expected values.
 	private Movement customizeCoordinatesToUser(Movement move, int gameIdx) {
 		Point[] lastMove = move.getLastMove();
 		Point[] fixed = new Point[2];
@@ -162,11 +175,7 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 		return move;
 	}
 
-	private Colors getMyColor(int game, int player)  throws RemoteException{
-		return games.get(game).getPlayer(player).getColor();
-		
-	}
-
+	//This function registers the user to the application.
 	@Override
 	public void register(String firstname, String surname, String username, String password, String email,
 			String picture) throws RemoteException {
@@ -175,40 +184,52 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 
 	}
 
+	//This function asks the DB to validate the user in the arguments and return the response of the DB.
 	@Override
 	public boolean validateUser(String username, String password) throws RemoteException {
 		return this.db.validateUser(username, password);
 		
 	}
 	
+	//Asks the DB to login the user in the arguments.
+	//Returns true if the action succeeded or false otherwise.
 	@Override
 	public boolean login(String username, String password) {
 		return this.db.login(username, password);
 	}
 	
+	//Asks the DB to update that the user name in the arguments wants to logout.
+	//Returns true if the action succeeded or false otherwise.
 	@Override
 	public boolean logout(String username) {
 		return this.db.logout(username);
 	}
 
+	//Asks the DB to check if the user in the arguments exists.
+	//Returns true if the action succeeded or false otherwise.
 	@Override
 	public boolean isUsernameExists(String username) throws RemoteException {
 		return this.db.isUsernameExists(username);
 	}
 
+	//Asks the DB for the image of the user name.
+	//Returns the image if the action succeeded or false otherwise.
 	@Override
 	public String getClientImage(String username) throws RemoteException {
 		return this.db.getClientImage(username);
 	}
 
+	//Asks the DB for the image of the opponent via gameIdx and playerIdx.
+	//Returns the image if the action succeeded or false otherwise.
 	@Override
 	public String getOpponentImage(int gameIdx, int playerIdx) throws RemoteException {
 		Game game = games.get(gameIdx);
 		return this.db.getClientImage(game.getPlayer(playerIdx == 0? 1:0).getUsername());
 	}
 
+	
 	@Override
-	public List<UserAccount> getHighScoreFromDB() throws RemoteException {
+	public List<HighScoreData> getHighScoreFromDB() throws RemoteException {
 		
 		return this.db.getHighScoreFromDB();
 	}
@@ -282,20 +303,16 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 		this.db.updateDraw(username);
 		
 	}
-
-//	@Override
-//	public boolean isMyTool(int gameIdx, int playerIdx, int col, int row) throws RemoteException {
-//		Player player = games.get(gameIdx).getPlayer(playerIdx);
-//		if(player.getBoard().getTool(col, row).getColor() == player.getColor())
-//			return true;
-//		return false;
-//	}
 	
+	//This function update the coins amount of the user is dropped due to table join.
+	//Returns true if the action succeeded or false otherwise.
 	@Override
 	public boolean takeSeat(String username, int amount) {
 		return this.db.takeSeat(username, amount);
 	}
 
+	//This functions checks if the user has enough coins to join to the requested table.
+	//Return true if the action succeeded or false otherwise.
 	@Override
 	public boolean isEnoughCoins(String username, int amount) throws RemoteException {
 		return this.db.isEnoughCoins(username, amount);

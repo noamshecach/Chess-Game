@@ -7,6 +7,8 @@ import java.rmi.RemoteException;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
+
+import com.noam.jpa_project.Server.HighScoreData;
 import com.noam.jpa_project.Server.UserAccount;
 import SentObjects.AvailableMoves;
 import SentObjects.InitialSetup;
@@ -33,7 +35,7 @@ public interface IServerService extends Remote {
 	
 	String getOpponentImage(int game, int player) throws RemoteException;
 	
-	List<UserAccount> getHighScoreFromDB() throws RemoteException;
+	List<HighScoreData> getHighScoreFromDB() throws RemoteException;
 	
 	UserAccount getUser(String username) throws RemoteException;
 	
@@ -52,8 +54,6 @@ public interface IServerService extends Remote {
 	public void updateLose(String username, int amount) throws RemoteException;
 	
 	public void updateDraw(String username) throws RemoteException;
-	
-//	public boolean isMyTool(int gameIdx, int playerIdx, int col, int row) throws RemoteException;
 
 	public boolean login(String username, String password) throws RemoteException;
 

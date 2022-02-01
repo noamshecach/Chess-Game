@@ -16,7 +16,7 @@ public class Game implements Serializable, Cloneable {
 	private Board board;
 	private boolean turn;
 	private Colors currentPlayerColor = Colors.WHITE;
-	private int gameIndex, amount =0;
+	private int gameIndex = 0, amount =0;
 	private boolean againstComputer = false;
 	private Movement lastMove;
 	private String retiredPlayer;
@@ -39,12 +39,19 @@ public class Game implements Serializable, Cloneable {
 		return g;
 	}
 	
-	public Game(String name, int gameIndex, int amount) {
-		
+//	public Game(String name, int gameIndex, int amount) {
+//		
+//		this.players = new Player[2];
+//		this.gameIndex = gameIndex;
+//		players[0] = new Player(name, false);
+//		this.amount = amount;
+//	}
+	
+	public void initialize(String name, int gameIndex, int amount) {
 		this.players = new Player[2];
 		this.gameIndex = gameIndex;
 		players[0] = new Player(name, false);
-		this.amount = amount;
+		this.amount = amount;	
 	}
 	
 	public void buildBoard() {
