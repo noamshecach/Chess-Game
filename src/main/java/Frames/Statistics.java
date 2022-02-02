@@ -20,15 +20,18 @@ public class Statistics extends GeneralJFrame {
 	private String username;
 	
 	public Statistics(ContactServer contactServer, GeneralJFrame previousFrame, String username) {
-		
+		// Calling parent class, set background image
 		super("/media/statistics/background.png");
 		
 		this.username = username;
 		this.contactServer = contactServer;
 		this.previousFrame = previousFrame;
 	    UserAccount user = contactServer.getUser();
-	    initialize();
 	    
+	    //Initialize graphical components.
+	    initializeComponents();
+	    
+	    //Add components to the screen
 	    addLabel(exit, 766, 946,199,97 ,null,mouseHandler);
 	    addLabel(back, 970, 946,199,97 ,null,mouseHandler);
 	    addCustomLabel(games,451,715, user.getNumberOfGames()+ "");
@@ -41,7 +44,8 @@ public class Statistics extends GeneralJFrame {
 	    this.setVisible(true);
 	}
 	
-	private void initialize() {
+	//Initialize graphical components.
+	private void initializeComponents() {
 		exit = new JLabel();
 		back = new JLabel();
 		games = new JLabel();
@@ -52,6 +56,7 @@ public class Statistics extends GeneralJFrame {
 		barleft = new BarName(true, contactServer.getUser(),710,330, contactServer, this, getLayeredPane());
 	}
 	
+	//Adds label to the screen
 	private void addCustomLabel(JLabel label, int posX, int posY, String text) {
 		addLabel(label, posX, posY,98,98 ,null,null);
 		label.setText(text + "");
@@ -62,18 +67,18 @@ public class Statistics extends GeneralJFrame {
 
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
+			//EXIT
 			if(exit == arg0.getSource()) {
 				if(contactServer.logout(username))
 					System.exit(0);
 				else
 					System.out.println("Error in logout");
 			}
+			//BACK
 			if(back == arg0.getSource()) {
 				previousFrame.setVisible(true);
 				setVisible(false);
 			}
-			System.out.println("x: " + arg0.getXOnScreen() + "y: " + arg0.getYOnScreen());
-		
 		}
 	}
 

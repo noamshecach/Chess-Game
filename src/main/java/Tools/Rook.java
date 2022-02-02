@@ -1,8 +1,6 @@
 package Tools;
 import java.awt.Point;
-
 import Logic.Colors;
-import Logic.Vector;
 
 public class Rook extends LinearTool implements Cloneable  {
 	
@@ -36,6 +34,7 @@ public class Rook extends LinearTool implements Cloneable  {
 		}
 	}
 	
+	//Make move
 	public void moveTo(Tool[][] tools, Point destination) {
 		
 		alreadyMoved = true;
@@ -47,6 +46,7 @@ public class Rook extends LinearTool implements Cloneable  {
 		this.numberOfMoves++;
 	}
  	
+	//Undo move
 	@Override
  	public void goBackTo(Tool[][] tools, Point destination) {
 		if(numberOfMoves > 0) {

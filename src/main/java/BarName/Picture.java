@@ -12,6 +12,7 @@ import Frames.GeneralJFrame;
 import Frames.Statistics;
 import javax.swing.JLabel;
 
+//Display user image in the bar component
 public class Picture extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -26,12 +27,21 @@ public class Picture extends JPanel {
 	public Picture(boolean isLeft, String picture,int posX, int posY, ContactServer contactServer, GeneralJFrame previousFrame, String username) {
 		this.username = username;
 		this.lblBackground = new JLabel();
+		
+		//the side of the bar
 		this.isLeft = isLeft;
+		
+		//top left corner
 		this.posX = posX;
 		this.posY = posY;
+		
+		//picture label
 		this.picture = picture;
+		
 		this.contactServer = contactServer;
 		this.previousFrame = previousFrame;
+		
+		//Add name label with mouse listener
 		setOpaque(false);
 		draw();
 		setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -42,6 +52,7 @@ public class Picture extends JPanel {
 		add(lblBackground, BorderLayout.CENTER);
 	}
 	
+	//Display image
 	public void draw() {
 		if(isLeft)
 			setBounds((int)((posX + 70) * GeneralJFrame.widthProp) , (int)((posY + 30 ) * GeneralJFrame.heightProp), (int)(322 * 0.4 * GeneralJFrame.widthProp),
@@ -60,6 +71,7 @@ public class Picture extends JPanel {
 	    return image;
 	}
 	
+	//Mouse Handler - click for get to statistics screen
 	private class MouseHandler extends MouseAdapter {
 
 		@Override

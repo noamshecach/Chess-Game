@@ -2,6 +2,9 @@ package Logic;
 
 import java.awt.Point;
 
+//This object represents an remote tool.
+//It's location is 'source' and it's direction is 'direction'.
+
 public class Vector {
 	private Point source;
 	private Point direction;

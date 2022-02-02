@@ -16,7 +16,7 @@ abstract public class Tool implements Serializable, Cloneable {
 	protected Point[] directions;
 	protected double myValue = 0;
 	protected int numberOfMoves = 0;
-	protected int id;
+	protected int id; //unique identifier for each tool type and situation
 
 	public List<Point> canMoveTo = new ArrayList<Point>();
 	public List<Vector> threatsOnMe = new ArrayList<Vector>();
@@ -85,7 +85,6 @@ abstract public class Tool implements Serializable, Cloneable {
 		t.pawnsCanReach.remove(dest);
 //			System.out.println(t + "pawnsCanReach.remove " + dest.x + " " + dest.y );
 	}
-	
 	
 	private boolean removeFromList(List<Vector> list, Point toolCoordinates) {
 		// Removing threat from a list.
@@ -202,8 +201,6 @@ abstract public class Tool implements Serializable, Cloneable {
 			return protectedByOthers.size();
 	}
 	
-
-	
 	protected boolean vectorListContains(List<Vector> list, Point move) {
 		for(Vector v: list) {
 			Point p = v.getSource();
@@ -212,6 +209,9 @@ abstract public class Tool implements Serializable, Cloneable {
 		}
 		return false;
 	}
+	
+	
+	
 	
 	// I used the term 'threat' but it can also be for protection relationship
 	public void diminishImpactOnList(Tool[][] tools,Tool currTool, List<Vector> list, boolean isThreat) {
@@ -243,9 +243,12 @@ abstract public class Tool implements Serializable, Cloneable {
 		}
 	}
 	
+	//Adds to the tool linear movement in the specified direction.
 	public boolean addingLinearMovement(Tool[][] tools,Tool currTool, Tool threatSource ,Point dir) {
 		int i = 1;
 		Point threatSrcLocation = new Point(threatSource.location.x , threatSource.location.y);
+		
+		//Adds empty squares in the line to canMoveTo list
 		while(tools[currTool.location.x + dir.x * i][currTool.location.y + dir.y* i] instanceof Empty) {
 			addMovement(threatSource, new Point(currTool.location.x + dir.x * i, currTool.location.y + dir.y* i));
 			((Empty)tools[currTool.location.x + dir.x * i][currTool.location.y + dir.y* i]).addRelationship(tools, new Point(dir.x * -1, dir.y * -1), threatSrcLocation, threatSource.color);
@@ -253,14 +256,18 @@ abstract public class Tool implements Serializable, Cloneable {
 		}
 		Point toolCoordinates = new Point(currTool.location.x + dir.x * i, currTool.location.y + dir.y * i);
 		Tool destinationSquare = tools[currTool.location.x + dir.x * i] [currTool.location.y + dir.y * i];
+		
+		//If reached to wall - end.
 		if(destinationSquare instanceof Wall)
 			return false;
 		
+		//If reached to tool with the same color - update protection.
 		if(destinationSquare.getColor() == threatSource.color) {
 			Vector newProtection = new Vector(toolCoordinates, dir);
 			addIprotect(threatSource, newProtection);
 			addProtectedByOthers(destinationSquare, new Vector(threatSrcLocation, newProtection.getOppositeDirection()));
 		}else {
+			//If reached to tool with opponent color - update threat.
 			Vector newThreat = new Vector(toolCoordinates, dir);
 			addIthreat(threatSource, newThreat);
 			addMovement(threatSource, toolCoordinates); 
@@ -269,7 +276,9 @@ abstract public class Tool implements Serializable, Cloneable {
 		return true;
 	}
 	
+	//Remove this tool from the board
 	public void removeFromBoard(Tool[][] tools) {
+		//Abort the influence of this tool on other tool's lists (first 5).
 		diminishToolImpact(tools, this);
 		tools[location.x][location.y] = new Empty(new Point(location.x,location.y), "", threatsOnMe, protectedByOthers, pawnsCanReach, color);
 		//Update pawn forward movement
@@ -277,6 +286,7 @@ abstract public class Tool implements Serializable, Cloneable {
 			((Pawn)tools[p.x][p.y]).addForwardMovement(tools, location);
 	}
 	
+	//Make move - removeFromBoard + placeAt
 	public void moveTo(Tool[][] tools, Point destination) {
 //		System.out.println("removeFromBoard:");
 		removeFromBoard(tools);
@@ -285,6 +295,7 @@ abstract public class Tool implements Serializable, Cloneable {
 		this.numberOfMoves++;
 	}
 	
+	//Undo move - removeFromBoard + placeAt
 	public void goBackTo(Tool[][] tools, Point destination) {
 //		System.out.println("removeFromBoard:");
 		removeFromBoard(tools);
@@ -321,6 +332,7 @@ abstract public class Tool implements Serializable, Cloneable {
 //		}
 //	}
 	
+	//Abort the influence of this tool on other tool's lists (first 5).
 	public void diminishToolImpact(Tool[][] tools, Tool tool) {
 		
 		diminishImpactOnList(tools, tool, tool.threatsOnMe, true);
@@ -350,32 +362,55 @@ abstract public class Tool implements Serializable, Cloneable {
 		removeAllIthreat();
 	}
 	
+ 	//Will set the location of this tool to 'destination' in tools array.
+ 	//Updates all the neighbors lists with the relevant information.
 	public void placeAt(Tool[][] tools, Point destination) {
 
 		Tool destSquare = tools[destination.x][destination.y];	
+		//Remove the influence of this tool on other squares lists
 		if(!(destSquare instanceof Empty)) {
 			destSquare.diminishToolImpact(tools, destSquare);
 			removeThreatOnMe(this, destination);
 		}
 		
+		//Update my threatsOnMe list to the destination's threatsOnMe list
 		threatsOnMe =  tools[destination.x][destination.y].getThreats(color);
+		
+		//Update my protectedByOthers list to the destination's protectedByOthers list.
 		protectedByOthers =  tools[destination.x][destination.y].getProtects(color);
+		
+		//Update my location to the destination location.
 		location = new Point(destination.x, destination.y);
+		
+		//Remove canMoveTo, Iprotect, Ithreat lists.
 		removeAllMoves();
 		removeAllIprotect();
 		removeAllIthreat();
-		pawnsCanReach = tools[destination.x][destination.y].pawnsCanReach;
-		//checkIfClean(tools, destination);
 		
+		//Update my pawnsCanReach list to the destanation's pawnCanReach list.
+		pawnsCanReach = tools[destination.x][destination.y].pawnsCanReach;
+		
+		//checkIfClean(tools, destination);
 		//boolean isEmpty = tools[destination.x][destination.y] instanceof Empty ? true:false;
+		
+		
 		tools[destination.x][destination.y] = this;	
+		
+		//Update the pawns that can reach this location about the change.
 		for(Point p: pawnsCanReach) 
 			((Pawn)tools[p.x][p.y]).removeForwardMovement(tools,location);
+		
+		//Update list - canMoveTo, Iprotect, Ithreat
 		updateLists(tools);
 		
 		fixAffectedTools(tools);	
 	}
 	
+	// Assumption: this tool reached new position in the board.
+	// It has the threats and protections list up-to-date.
+	// Though, the new location of this tool affects the tools of those lists.
+	// Maybe they protect the new tool, may be threatening. 
+	// The new tool may block the path of those tools. This function fixes this problems.
 	public void fixAffectedTools(Tool[][] tools) {
 		updateRemoteLists(tools,threatsOnMe);
 		updateRemoteLists(tools,protectedByOthers);	
@@ -395,6 +430,11 @@ abstract public class Tool implements Serializable, Cloneable {
 			return threatsOnMe;
 	}
 	
+	// Assumption: this tool reached new position in the board.
+	// It has the threats and protections list up-to-date.
+	// Though, the new location of this tool affects the tools of those lists.
+	// Maybe they protect the new tool, may be threatening. 
+	// The new tool may block the path of those tools. This function fixes this problems (only on specified list).
 	public void updateRemoteLists(Tool[][] tools, List<Vector> list) {
 		Point locationClone = new Point(location.x, location.y);
 		for(Vector v: list) {
@@ -402,18 +442,22 @@ abstract public class Tool implements Serializable, Cloneable {
 			Tool threatSource = tools[threatCoordinate.x][threatCoordinate.y];
 			
 			Point dir = v.getOppositeDirection();
-			if(color == threatSource.getColor()) {
+			if(color == threatSource.getColor()) { 
+				//same color - therefore threatSource protecting this tool and can't move to this location
 				addIprotect(threatSource, new Vector(locationClone, dir));
 				removeMove(threatSource, locationClone);
 			}
 			else {
+				//different color - threatSource threatening this tool
 				addIthreat(threatSource, new Vector(locationClone, dir));
+				//If the threatening tool is Pawn - add threatSource to his canMoveTo list
 				if(threatSource instanceof Pawn) 
 					addMovement(threatSource, locationClone);
 			}
-
+			//If threatSource is Queen, Rook, Bishop... 
 			if(threatSource instanceof LinearTool) {
 				int i = 1;
+				//Remove the threatening or protecting relationship from the empty squares on the rest of the path.
 				while(removeMove(threatSource, tools[location.x + dir.x * i][location.y + dir.y * i].getLocation()) )
 				{
 					if(tools[location.x + dir.x * i][location.y + dir.y * i] instanceof Empty)
@@ -423,7 +467,10 @@ abstract public class Tool implements Serializable, Cloneable {
 				if(i > 1 && !(tools[location.x + dir.x * (i - 1)][location.y + dir.y * (i - 1)] instanceof Empty))
 					i--;
 				
+				
 				if(!(tools[location.x + dir.x * i][location.y + dir.y * i] instanceof Wall || tools[location.x + dir.x * i][location.y + dir.y * i] instanceof Empty)) {
+					//There is tool after the all those empty squares
+					//Remove Protection or threatening relationship from threatSource and the reached tool
 					if(tools[location.x + dir.x * i][location.y + dir.y * i].getColor() == threatSource.color) {
 						removeIprotect(threatSource, tools[location.x + dir.x * i][location.y + dir.y * i].getLocation());
 						removeProtectedByOthers(tools[location.x + dir.x * i][location.y + dir.y * i], threatCoordinate);
@@ -485,6 +532,7 @@ abstract public class Tool implements Serializable, Cloneable {
 		return availableMoves;
 	}
 	
+	//Update Ithreat, Iprotect, ThreatsOnMe, ProtectedByOthers, canMoveTo, pawnCanReach lists.
 	public abstract void updateLists(Tool[][] tools);
 	
 	public Point[] getDirections() {

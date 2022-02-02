@@ -2,12 +2,13 @@ package Timer;
 
 import java.util.Date;
 
+//TimerLogic cast startTime to adequate string.
 public class TimerLogic {
 
 	private int hours;
 	private int minutes;
 	private int seconds;
-	public static long hourInMilisec = 3600000, 
+	public static final long hourInMilisec = 3600000, 
 			minuteInMilisec = 60000, 
 			secondInMilisecond = 1000,
 			waitingTime = 14400000;
@@ -16,12 +17,15 @@ public class TimerLogic {
 		startOver(startTime);
 	}
 	
+	//Returns true if the time is over or false otherwise.
 	public boolean isTimeOver() {
 		if(hours == 0 && minutes == 0 && seconds == 0)
 			return true;
 		return false;
 	}
 	
+	//Drops one second from the clock.
+	//Returns a string with the new value of the timer.
 	public String dropSecond() {
 		if(seconds > 0) {
 			seconds--;
@@ -44,6 +48,7 @@ public class TimerLogic {
 		}
 	}
 	
+	//Returns a string that describe the timer values.
 	public String toString() {
 		String sHour = "", sMinute = "", sSecond = "";
 		if(hours == 0 && minutes == 0 && seconds == 0)
@@ -57,6 +62,7 @@ public class TimerLogic {
 		return sHour+ hours +":" + sMinute+ minutes + ":"+ sSecond+ + seconds;
 	}
 	
+	//Initialize timer
 	public void startOver(long startTime) {
 		Date date = new Date();
 		long differnce = date.getTime() - startTime;

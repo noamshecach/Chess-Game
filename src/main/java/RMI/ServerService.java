@@ -76,6 +76,7 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 				//Human opponent
 				game.startGame(username);
 				color1 = game.getPlayer(1).getColor();
+				//Preparing chat
 				new CreateQueue(game.getUsernames());
 				game.notify();
 				return new InitialSetup(getAbstractToolList(color1), !game.getTurn(), color1, 

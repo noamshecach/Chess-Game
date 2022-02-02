@@ -10,6 +10,7 @@ import SystemMessage.Message;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+//User registration for the application
 public class Register extends GeneralJFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -26,12 +27,15 @@ public class Register extends GeneralJFrame {
 
 	
 	public Register(Login login, ContactServer contactServer) {
+		// Calling parent class, set background image
 		super("/media/register/background.png");
 		
 		this.login = login;
+		//Initialize the graphical components.
     	initialize();
-    	avatar.setEditable(false);
     	
+    	//Add the components to the screen
+    	avatar.setEditable(false);
 	    addLabel(browse, 1146, 842, browseImg,mouseHandler);
 	    addLabel(chooseCharacter, 584, 946, chooseCharacterImg,mouseHandler);
 	    addLabel(signup, 1146, 946, reg_signupImg,mouseHandler);
@@ -46,6 +50,7 @@ public class Register extends GeneralJFrame {
 		this.contactServer = contactServer;
 	}
 	
+	//Initialize the graphical components.
 	private void initialize() {
 		browse = new JLabel();
 		chooseCharacter = new JLabel();
@@ -62,11 +67,13 @@ public class Register extends GeneralJFrame {
 		
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
+			//Checks if user name exists
 			if(username.getText() != null && !arg0.getSource().equals(username))
 			{
 				if(contactServer.isUsernameExists(username.getText()))
 					Message.displayWarning("\nusername  already  exists!");
 			}
+			//SignUp pressed. Checks if all the form completed successfully
 			if(signup == arg0.getSource()) {
 				if(!contactServer.isUsernameExists(username.getText())) {
 					contactServer.register(firstname.getText(), surname.getText(), username.getText(),
@@ -77,6 +84,7 @@ public class Register extends GeneralJFrame {
 				else
 					Message.displayWarning("\nusername  already  exists!");
 			}
+			//Browse for image.
 			if(browse == arg0.getSource()) {
 		        JFileChooser chooser = new JFileChooser();
 		        FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -88,9 +96,10 @@ public class Register extends GeneralJFrame {
 		        }//else
 		        	//JOptionPane.showMessageDialog(null, "The extension is not supported. Choose another file.");
 			}
+			//Choose avatar
 			if(chooseCharacter == arg0.getSource()) {
 				setVisible(false);
-				ChooseCharacter character = new ChooseCharacter(Register.this);	
+				new ChooseCharacter(Register.this);	
 			}
 		}
 	}

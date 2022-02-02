@@ -4,11 +4,11 @@ import java.awt.Component;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
+//This class has the relevant properties of graphical component.
+//GeneralJFrame has array of this components for each graphical component on the screen.
+//When the screen is resized all those components adapt to the window size.
 public class MyComponent extends JLabel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private Component comp;
 	private ImageIcon image;

@@ -7,11 +7,9 @@ import javax.swing.border.EmptyBorder;
 import Frames.GeneralJFrame;
 import javax.swing.JLabel;
 
+//Display amount label on the bar
 public class Amount extends JPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JLabel lblBackground;
 	private int posX, posY;
@@ -20,10 +18,14 @@ public class Amount extends JPanel {
 
 	public Amount(boolean isLeft, String amount,int posX, int posY) {
 		setOpaque(false);
+		
+		//upper left corner
 		this.posX = posX;
 		this.posY = posY;
 		this.amount = amount;
 		this.isLeft = isLeft;
+		
+		//display amount label
 		draw();
 		setBorder(new EmptyBorder(5, 5, 5, 5));
 		setLayout(new BorderLayout(0, 0));
@@ -35,6 +37,7 @@ public class Amount extends JPanel {
 		add(lblBackground, BorderLayout.CENTER);
 	}
 	
+	//Change the content of the amount label
 	public void changeAmount(String amount) {
 		this.amount = amount;
 		lblBackground.setText(amount + " $");
@@ -43,6 +46,7 @@ public class Amount extends JPanel {
 		this.repaint();
 	}
 	
+	//Display label
 	public void draw() {
 		if(isLeft) {
 			setBounds((int)((posX + 270) * GeneralJFrame.widthProp) , (int)((posY + 75) * GeneralJFrame.heightProp), (int)(300 * GeneralJFrame.widthProp),

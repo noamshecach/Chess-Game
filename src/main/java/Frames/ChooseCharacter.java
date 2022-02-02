@@ -15,8 +15,10 @@ public class ChooseCharacter extends GeneralJFrame {
 	private Register register;
 	
 	public ChooseCharacter(Register register) {
-		
+		// Calling parent class, set background image
 		super("/media/playersImage/background.png");
+		
+		//Initialize 2 arrays of images. The first includes colorful images and the second grey images.
 		
 		this.register = register;
 		colorImgs = new ImageIcon[6];
@@ -36,6 +38,7 @@ public class ChooseCharacter extends GeneralJFrame {
 
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
+			//Get the index of the chosen image
 			String s = "";
 			for(int i =0; i< players.length; i++) {
 				if(players[i] == arg0.getSource()) {
@@ -43,6 +46,7 @@ public class ChooseCharacter extends GeneralJFrame {
 					break;
 				}
 			}
+			//Set the chosen image as the user image
 			if(!s.equals("")) {
 				register.setAvatar(s);
 				ChooseCharacter.this.setVisible(false);
@@ -50,6 +54,7 @@ public class ChooseCharacter extends GeneralJFrame {
 			}
 		}
 		
+		//Change the image to colorful when entered
 		public void mouseEntered(MouseEvent ev) {
 			for(int i =0; i< players.length; i++) {
 				if(players[i] == ev.getSource()) {
@@ -59,6 +64,8 @@ public class ChooseCharacter extends GeneralJFrame {
 			}
 
 		}
+		
+		//Change the image to grey when exited
 		public void mouseExited(MouseEvent ev) {
 			for(int i = 0; i < players.length; i++) {
 				if(players[i] == ev.getSource()) {

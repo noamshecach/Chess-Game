@@ -11,6 +11,7 @@ import javax.naming.NamingException;
 
 import Chat.Chat;
 
+//Responsible for listening to opponent's messages
 public class JmsReceiver {
 
 	private ConnectionFactory connectionFactory;
@@ -24,6 +25,7 @@ public class JmsReceiver {
 		getMessage(queueName);
 	}
 	
+	//Chat class will listen to the opponent queue for new messages.
 	private void getMessage(String queueName) {
 		try {
 		    System.setProperty("org.omg.CORBA.ORBInitialHost", "127.0.0.1");
@@ -46,6 +48,7 @@ public class JmsReceiver {
 		}
 	}
 	
+	//Ending chat session
 	public void endSession() {
 		try {
 			messageConsumer.close();

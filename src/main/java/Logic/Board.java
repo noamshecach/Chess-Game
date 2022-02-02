@@ -19,7 +19,12 @@ import Tools.*;
 public class Board implements Cloneable {
 
 	public static final int WALL_SIZE = 2, SIZE = 8;
+	//2 dimensional array of tools
 	private Tool[][] tool;
+	//2 Lists of the active tools of each side
+	private List<Tool> whiteTools = new ArrayList<Tool>();
+	private List<Tool> blackTools = new ArrayList<Tool>();
+	
 	private Colors currPlayerColor = Colors.WHITE;	
 	private Check check = Check.NONE;
 	private Mate mate = Mate.NONE;
@@ -28,21 +33,29 @@ public class Board implements Cloneable {
 	private Point blackKing, whiteKing;
 	// # of white tools, # of white bishops, # of white knights, # of black tools, # of black bishops, # of black knights, # moves without using pawn, #last value of drawInfo[6]
 	private byte[] drawInfo = {16,2,2,16,2,2,0,0}; 
-	private List<Tool> whiteTools = new ArrayList<Tool>();
-	private List<Tool> blackTools = new ArrayList<Tool>();
+
+	//announce that the computer calculates.. no need to return value from makeMove function
 	private boolean computerRun = false;
+	
 	private Stack<Byte> movesWithoutPawn = new Stack<Byte>();
+	
+	//hash table for Zobrist keys for the position history
 	private Hashtable<Long, Integer> positionHistory = new Hashtable<>(100);
+	
+	//Tree object to calculate computer moves
 	private Tree computerMoves;
-		
+	
+	//Constructor for 2 human players
 	public Board() {
 		
 	}
 	
+	//Constructor for game against computer
 	public Board(Tree tree) {
 		this.computerMoves = tree;
 	}
 	
+	//Returns the tools 2 dimensional array.
 	public Tool[][] getToolBoard(){
 		return tool;
 	}
@@ -53,13 +66,16 @@ public class Board implements Cloneable {
 		return getBlackTools();
 	}
 	
+	//Returns list of white tools
 	public List<Tool> getWhiteTools() {
 		return whiteTools;
 	}
 	
+	//Returns list of black tools
 	public List<Tool> getBlackTools() {
 		return blackTools;
 	}
+	
 	
 	public void setCurrentPlayerColor(Colors currentPlayerColor) {
 		this.currPlayerColor = currentPlayerColor;
@@ -86,18 +102,23 @@ public class Board implements Cloneable {
 		this.tool = tools;
 	}
 	
+	//Calculate and make computer move
 	public Movement requestComputerMove(Player[] players, Game game) {
-		//Tree tree = new Tree();
+
 		computerRun = true;
-		computerMoves.setNumberOfNodes(0);
+		//computerMoves.setNumberOfNodes(0);
+		//Calculate computer move
 		TreeNode node = computerMoves.minMax(this,0, -Double.MAX_VALUE, Double.MAX_VALUE, computerMoves.getFutureMoves() % 2 ==0 ? false: true);
 		computerRun = false;
-		System.out.print(computerMoves.getNodesNum() + " nodes \n" );
-		System.out.println("Comp: From [" + (node.getToolIdx().x - 2) + "," + (node.getToolIdx().y - 2) + "]");
-		System.out.println("      To [" + (node.getToIdx().x - 2) + "," + (node.getToIdx().y - 2) + "]");
+//		System.out.print(computerMoves.getNodesNum() + " nodes \n" );
+//		System.out.println("Comp: From [" + (node.getToolIdx().x - 2) + "," + (node.getToolIdx().y - 2) + "]");
+//		System.out.println("      To [" + (node.getToIdx().x - 2) + "," + (node.getToIdx().y - 2) + "]");
+		
+		//Make computer move
 		return makeMove(node.getToolIdx(),node.getToIdx());
 	}
 	
+	//Print textual representation of the board.
 	public void printBoard() {	
 		System.out.println("\n");
 		for(int row = 0; row < SIZE ; row++) {
@@ -115,6 +136,8 @@ public class Board implements Cloneable {
 	
 	public void buildBoard() {
 		tool = new Tool[SIZE + WALL_SIZE * 2][SIZE + WALL_SIZE * 2];
+		
+		//Read the file tools.txt using class XMLRead
 		try {
 			File inputFile = new File(System.getProperty("user.dir") + "///tools.txt");
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -123,6 +146,7 @@ public class Board implements Cloneable {
 			saxParser.parse(inputFile, userhandler);
 		}catch(Exception e ) { e.printStackTrace();}
 		
+		//Initialize the rest of the objects of tools array
 		for(int row = 0; row < SIZE + WALL_SIZE * 2; row++) {
 			for(int col = 0; col < SIZE + WALL_SIZE * 2 ; col++) {
 				if (row < WALL_SIZE || col < WALL_SIZE || col > SIZE + 1 || row > SIZE + 1 )
@@ -131,12 +155,18 @@ public class Board implements Cloneable {
 					tool[row][col] = new Empty(new Point(row, col));
 			}
 		}
+		//Create Zobrist keys
 		Zobrist.initiateKeys();
+		
+		//Push Zobrist key for the initial position
 		positionHistory.put( Zobrist.getHash(whiteTools,blackTools), 1);
+		
+		//Calculate possible moves for each tool
 		calculatePossibleMoves();
 		//printMoves();
 	}
 	
+	//Calculate possible moves for each tool
 	private void calculatePossibleMoves() {
 		
 		for (int row = 2; row < SIZE + 2; row++) {
@@ -156,6 +186,9 @@ public class Board implements Cloneable {
 		return tool[row][col];
 	}
 	
+	//Adds tools to 'whiteTools' , 'blackTools' and tool array.
+	//Used by XMLRead functions. 
+	//Called After reading the XML file that represents the opening state.
 	public <T extends Tool> void  setTool(T t, Colors color) {
 		tool[t.getLocation().x][t.getLocation().y] =  t;
 		if(color == Colors.WHITE)
@@ -164,6 +197,7 @@ public class Board implements Cloneable {
 			blackTools.add(tool[t.getLocation().x][t.getLocation().y]);
 	}
 	
+	//Returns possible moves that not expose the king
 	public List<Point> getRestrictedCanMoveToList(int col, int row) {
 		Tool pressedTool = getTool(col, row);
 		
@@ -173,6 +207,7 @@ public class Board implements Cloneable {
 		// Returns only the moves that are not exposing the king.
 		List<Point> canMoveTo = pressedTool.getPossibleMoves(tool, getKing(pressedTool.getColor()).getLocation());
 		
+		//If there is no movement options, return.
 		if(canMoveTo.size() == 0)
 			return canMoveTo;
 		
@@ -198,6 +233,7 @@ public class Board implements Cloneable {
 		return canMoveTo;
 	}
 
+	//Returns the possible moves of the tool in [col][row]
 	public AvailableMoves getPossibleMoves(int col, int row)
 	{
 		AvailableMoves moves =  new AvailableMoves();
@@ -268,6 +304,7 @@ public class Board implements Cloneable {
 				whiteTools.remove(tool[toSq.x][toSq.y]);
 		}
 		
+		//Insert Zobrist hash key of new position
 		long hash = Zobrist.getHash(curSq, toSq, tool[curSq.x][curSq.y].getId());
 		if(positionHistory.get(hash) == null)
 			positionHistory.put(hash, 1);
@@ -324,6 +361,7 @@ public class Board implements Cloneable {
 		numberOfMoves--;
 		drawInfo[6] = movesWithoutPawn.pop();
 		
+		//Add deleted tool
 		if(!(deletedTool instanceof Empty) &&   deletedTool.getColor() != currPlayerColor ) {
 			updateDrawInfo(deletedTool, 1);
 			if(currPlayerColor == Colors.WHITE)
@@ -332,6 +370,7 @@ public class Board implements Cloneable {
 				whiteTools.add(deletedTool);
 		}
 		
+		//remove position from positionHistory
 		int value = positionHistory.get(hash);
 		if(value == 1)
 			positionHistory.remove(hash);

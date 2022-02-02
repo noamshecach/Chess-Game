@@ -7,11 +7,9 @@ import Client.ContactServer;
 import Frames.GeneralJFrame;
 import javax.swing.JLayeredPane;
 
+//Display bar component on screen
 public class BarName extends JPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private Bar bar;
 	private Amount amount;
@@ -19,7 +17,9 @@ public class BarName extends JPanel {
 	private Picture pic;
 	private int posX, posY;
 	
+	//Constructor for Machine opponent
 	public BarName(boolean isLeft, int posX, int posY, ContactServer contactServer, GeneralJFrame previousFrame, JLayeredPane lp) {
+		//Upper Left corner.
 		this.posX = posX;
 		this.posY = posY;
 		String username = "Computer";
@@ -27,11 +27,18 @@ public class BarName extends JPanel {
 		
 		setOpaque(false);
 		setBorder(new EmptyBorder(5, 5, 5, 5));
+		
+		//bar's background
 		bar = new Bar(isLeft, posX, posY);
+		
+		//user name tag
 		name = new Name(isLeft, username, posX, posY);
+		
+		//user name image
 		pic = new Picture(isLeft, picture, posX, posY, contactServer,previousFrame, "Computer");
 		
-		String useramount = "";
+		//user name coins label
+		String useramount = "99999$";
 		amount = new Amount(isLeft, useramount, posX, posY);
 		
 		setBounds((int)(posX * GeneralJFrame.widthProp) , (int)(posY * GeneralJFrame.heightProp), (int)(530 * GeneralJFrame.widthProp),
@@ -43,7 +50,9 @@ public class BarName extends JPanel {
 		lp.add(name, new Integer(12));
 	}
 	
+	//Constructor for human opponent
 	public BarName(boolean isLeft, UserAccount user, int posX, int posY, ContactServer contactServer, GeneralJFrame previousFrame, JLayeredPane lp) {
+		//upper left corner
 		this.posX = posX;
 		this.posY = posY;
 		String username = user.getUserName();
@@ -75,6 +84,7 @@ public class BarName extends JPanel {
 		bar.shineBar();
 	}
 	
+	//Change amount label
 	public void changeAmount(String amountValue) {
 		amount.changeAmount(amountValue);
 		amount.paintImmediately(amount.getVisibleRect());
@@ -82,6 +92,7 @@ public class BarName extends JPanel {
 		this.repaint();
 	}
 	
+	//Display bar
 	public void draw() {
 		setBounds((int)(posX * GeneralJFrame.widthProp) , (int)(posY * GeneralJFrame.heightProp), (int)(530 * GeneralJFrame.widthProp),
 				(int)(240 * GeneralJFrame.heightProp));

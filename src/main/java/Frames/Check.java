@@ -1,7 +1,7 @@
 package Frames;
 
 /**
- * this enum was created to differentiate between the check situations on
+ * this enum was created to differentiate between the check situations in
  * the game. (on the black, on the white or none);   
  * @author Administrator
  *

@@ -19,6 +19,7 @@ import javax.swing.border.EmptyBorder;
 import Frames.GeneralJFrame;
 import JMS.JmsReceiver;
 
+//View component - display chat visually
 public class Chat extends JPanel implements MessageListener {
 
 	private static final long serialVersionUID = 1L;
@@ -37,23 +38,35 @@ public class Chat extends JPanel implements MessageListener {
 		setBorder(new EmptyBorder(5, 5, 5, 5));
 		setOpaque(false);
 		
+		//This class (Chat) will listen for messages from the opponent
 		new JmsReceiver(this, "jms/" + opponentQueue);
 		
+		//The chat background in it's opened state
 	    chatBackground = new ChatBackground();
+	    
+	    //This object is not visible at first. If the user minimizes the chat content - it will appear.
 	    chatMinimized = new ChatMinimized();
 	    chatMinimized.setVisible(false);
 	    chatMinimized.setEnabled(false);
 	    
+	    //Click Handler
 	    pressEvent = new  ChatPressed(chatBackground, chatMinimized);
 
+	    //The chat background in it's minimized state. not visible at first.
 	    chatClientName = new ChatClientName(pressEvent, opponentQueue);
 	    chatClientName.setEnabled(false);
 	    chatClientName.setVisible(false);
+	    
+	    //Display the messages interaction between users.
 	    chatContent = new ChatContent(pressEvent, myQueue, opponentQueue);
+	    
 	    pressEvent.setChat(chatContent);
 	    pressEvent.setChatClientName(chatClientName);
 
+	    //scaling the chat dimensions
 	    draw();
+	    
+	    //Add the chat components to the screen
 	    lp.add(chatBackground, new Integer(4));
 	    lp.add(chatMinimized, new Integer(4));
 	    lp.add(chatClientName, new Integer(5));
@@ -61,6 +74,7 @@ public class Chat extends JPanel implements MessageListener {
 		
 	}
 	
+	//scaling the chat dimensions
 	public void draw() {
 		width = (int) (originalWidth * GeneralJFrame.widthProp);
 		height = (int) (originalHeight * GeneralJFrame.heightProp);
@@ -70,14 +84,15 @@ public class Chat extends JPanel implements MessageListener {
 	    chatClientName.scale((int)((this.getX() )* compProp), (int)((this.getY() ) * compProp));
 	}
 	
-	public ChatContent getChatContent() {
-		return chatContent;
-	}
+//	public ChatContent getChatContent() {
+//		return chatContent;
+//	}
 
-	public void setChatContent(ChatContent chatContent) {
-		this.chatContent = chatContent;
-	}
+//	public void setChatContent(ChatContent chatContent) {
+//		this.chatContent = chatContent;
+//	}
 	
+	//Click Handler
 	private class ChatPressed extends MouseAdapter {
 		
 		private ChatBackground chatBackground;
@@ -101,26 +116,42 @@ public class Chat extends JPanel implements MessageListener {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if(e.getSource() instanceof JLabel) {
-				if(((JLabel)e.getSource()).equals(chatContent.getUserNameHeader())){ //need to minimize
+				
+				//Click on chat's heading to minimize
+				if(((JLabel)e.getSource()).equals(chatContent.getUserNameHeader())){ 
+					//1) background disabled
 					this.chatBackground.setEnabled(false);
 					this.chatBackground.setVisible(false);
+					// 2) content disabled
 					this.chatContent.setEnabled(false);
 					this.chatContent.setVisible(false);
+					
+					//3) Make minimizing chat effect
+					//3.1) make minimized chat visible.
 					this.chatMinimized.setEnabled(true);
 					this.chatMinimized.setVisible(true);
+					//3.2) Change the background image to minimized with black dot.
 					this.chatMinimized.closedChatBlack();
+					//3.3) Add the name label to the chat heading (make it visible)
 					this.chatClientName.setEnabled(true);
 					this.chatClientName.setVisible(true);
 					isChatOpen = false;
 				}else {
-					if(((JLabel)e.getSource()).getParent().equals(chatClientName)) {  //opens the chat
+					//Click on chat's name to open
+					if(((JLabel)e.getSource()).getParent().equals(chatClientName)) {  
+						
+						//1) Changing the background image to open chat with black dot
 						this.chatBackground.openChatBlack();
+						//1.1)Make the background image visible
 						this.chatBackground.setEnabled(true);
 						this.chatBackground.setVisible(true);
+						//2) Make chat content visible.
 						this.chatContent.setEnabled(true);
 						this.chatContent.setVisible(true);
+						//3)Make minimizedChat class not visible
 						this.chatMinimized.setEnabled(false);
 						this.chatMinimized.setVisible(false);
+						//4) Make the client name label not visible
 						this.chatClientName.setEnabled(false);
 						this.chatClientName.setVisible(false);
 						isChatOpen = true;
@@ -129,6 +160,7 @@ public class Chat extends JPanel implements MessageListener {
 			}
 			if(e.getSource() instanceof JTextArea &&  
 					((JTextArea)e.getSource()).equals(chatContent.getText())) 
+				//Changing the dot to black when the user clicked the textArea component to write message
 				chatBackground.openChatBlack();
 		}
 

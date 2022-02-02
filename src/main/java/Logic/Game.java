@@ -2,12 +2,8 @@ package Logic;
 
 import java.io.Serializable;
 import java.util.Random;
-
 import Computer.Tree;
 import SentObjects.Movement;
-import Tools.DummyPawn;
-import Tools.King;
-import Tools.Tool;
 
 public class Game implements Serializable, Cloneable {
 
@@ -21,24 +17,7 @@ public class Game implements Serializable, Cloneable {
 	private Movement lastMove;
 	private String retiredPlayer;
 	
-	
-	public Object clone() throws CloneNotSupportedException {
-		Game g = (Game) super.clone();
-		g.players = new Player[2];
-		for(int i = 0; i < players.length; i++)
-			g.players[i] = (Player) players[i].clone();
-		g.board = (Board) board.clone();
-		g.turn = turn;
-		g.currentPlayerColor = currentPlayerColor;
-		g.gameIndex = gameIndex;
-		g.amount = amount;
-		g.againstComputer = againstComputer;
-		g.lastMove = (Movement) lastMove.clone();
-		g.retiredPlayer = retiredPlayer;
 		
-		return g;
-	}
-	
 //	public Game(String name, int gameIndex, int amount) {
 //		
 //		this.players = new Player[2];
@@ -46,17 +25,29 @@ public class Game implements Serializable, Cloneable {
 //		players[0] = new Player(name, false);
 //		this.amount = amount;
 //	}
-	
+
+	//This function initialize this object - Set the first player, gameIndex, amount of coins in stake.
 	public void initialize(String name, int gameIndex, int amount) {
 		this.players = new Player[2];
 		this.gameIndex = gameIndex;
 		players[0] = new Player(name, false);
 		this.amount = amount;	
 	}
-	
+
+	//Build board object - for game VS computer.
 	public void buildBoard() {
-		Tree tree = new Tree();
-		this.board  = new Board(tree);
+		
+		if(againstComputer) {
+			//Tree object - in order to calculate the step of the computer
+			Tree tree = new Tree();
+			
+			//board object creation
+			this.board  = new Board(tree);
+		}else {
+			this.board  = new Board();
+		}
+		
+		//building board
 		board.buildBoard();
 	}
 	
@@ -80,6 +71,7 @@ public class Game implements Serializable, Cloneable {
 		this.againstComputer = againstComputer;
 	}
 
+	//Draw colors and turn
 	public void drawColors() {
 		if((new Random()).nextInt(2) == 1) {
 			players[0].setColor(Colors.WHITE);
@@ -121,18 +113,22 @@ public class Game implements Serializable, Cloneable {
 		this.gameIndex = gameIndex;
 	}
 
+	// Starting the game against human opponent - 
+	// set the second user, draw colors and turn and building board.
 	public void startGame(String username) {
 		setSecondPlayer(username);
 		drawColors();
 		buildBoard();
 	}
 	
+	//Starting game against computer -
+	//Human player will start.
 	public void startGameVSComputer() {
 		players[1] = new Player("Computer", true );
 		this.againstComputer = true;
 		players[0].setColor(Colors.WHITE);
 		players[1].setColor(Colors.BLACK);
-		this.turn = true; // player1 turn
+		this.turn = true; // player0 turn
 		buildBoard();
 	}
 	
@@ -180,6 +176,23 @@ public class Game implements Serializable, Cloneable {
 
 	public void setRetiredPlayer(String retiredPlayer) {
 		this.retiredPlayer = retiredPlayer;
+	}
+	
+	public Object clone() throws CloneNotSupportedException {
+		Game g = (Game) super.clone();
+		g.players = new Player[2];
+		for(int i = 0; i < players.length; i++)
+			g.players[i] = (Player) players[i].clone();
+		g.board = (Board) board.clone();
+		g.turn = turn;
+		g.currentPlayerColor = currentPlayerColor;
+		g.gameIndex = gameIndex;
+		g.amount = amount;
+		g.againstComputer = againstComputer;
+		g.lastMove = (Movement) lastMove.clone();
+		g.retiredPlayer = retiredPlayer;
+		
+		return g;
 	}
 	
 }

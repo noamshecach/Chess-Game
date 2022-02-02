@@ -1,7 +1,6 @@
 package Tools;
 import java.awt.Point;
 import Logic.Colors;
-import Logic.Vector;
 import MoveTypes.BishopDir;
 /**
  * this class (bishop) extends from the class tool.

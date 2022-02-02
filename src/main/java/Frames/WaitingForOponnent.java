@@ -5,6 +5,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import Client.ContactServer;
 
+//Display screen that announce that the user is waiting for an opponent
 public class WaitingForOponnent extends GeneralJFrame {
 	
 	private static final long serialVersionUID = 1L;
@@ -28,8 +29,10 @@ public class WaitingForOponnent extends GeneralJFrame {
 		this.tableNumber = tableNumber;
 		this.contactServer = contactServer;
 		
+		//Initialize graphical components
 		initalize();
 	
+		//Add graphical components to the screen
 	    addLabel(myPicture, 370, 222, profileLocImg,mouseHandler);
 	    addLabel(VS, 845, 317, vsImg,mouseHandler);
 	    addLabel(waitSign, 1190, 260, waitSignImg,mouseHandler);
@@ -40,6 +43,7 @@ public class WaitingForOponnent extends GeneralJFrame {
 	    setVisible(true);
 	}
 	
+	//Initialize graphical components
 	private void initalize() {
 		myPicture = new JLabel();
 		VS = new JLabel();
@@ -48,6 +52,7 @@ public class WaitingForOponnent extends GeneralJFrame {
 		waitSign = new JLabel();
 	}
 	
+	//Set the opponent image (called after opponent has joined to the table)
 	public void setOpponentImage(ImageIcon opponentImage) {
 		try {
 			searching.setVisible(false);
@@ -62,7 +67,7 @@ public class WaitingForOponnent extends GeneralJFrame {
 			opponent.setIcon(scaleImage(opponentImage, (int)(opponentImage.getIconWidth() * 1.22 * widthProp), (int)(opponentImage.getIconHeight() * 1.22 * heightProp)));
 			getLayeredPane().add(opponent, new Integer(4));
 			
-			//contactServer.takeSeat(username,tableNumber * 100);
+			contactServer.takeSeat(username,tableNumber * 100);
 
 			Thread.sleep(5000);
 			this.dispose();
@@ -72,6 +77,7 @@ public class WaitingForOponnent extends GeneralJFrame {
 
 	private class MouseHandler extends MouseAdapter {
 		
+		//Play against computer
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
 			if(vsComputer == arg0.getSource()) {

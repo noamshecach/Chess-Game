@@ -10,6 +10,8 @@ import javax.persistence.Table;
 @Entity(name = "Users")
 @Table(name = "Users")
 
+//This class describe the data that is kept on the app's users in the database. 
+
 public class UserAccount implements Serializable {
 
 	private static final long serialVersionUID = 1L;

@@ -11,6 +11,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+//Sending messages via chat
 public class JmsSender {
 
 	private ConnectionFactory connectionFactory;
@@ -23,6 +24,7 @@ public class JmsSender {
 		createSession(queueName);
 	}
 	
+	//Creates session for sending message - messageProducer 
 	private void createSession(String queueName) {
 		
 		try
@@ -45,6 +47,7 @@ public class JmsSender {
 		} catch (NamingException e) { e.printStackTrace(); }
 	}
 	
+	//Sending the message
 	public void send(String message) {
 		try {
 			textMessage.setText(message);
@@ -53,6 +56,7 @@ public class JmsSender {
 		} catch (JMSException e) { e.printStackTrace(); }
 	}
 	
+	//Ends the connection
 	public void endSession() {
 		try {
 			messageProducer.close();

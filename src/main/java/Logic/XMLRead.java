@@ -9,6 +9,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import SentObjects.AbstractTool;
 import Tools.*;
 
+//This class reads the XML representation of the opening
 public class XMLRead extends DefaultHandler {
 	
 	private Board board;
@@ -19,19 +20,24 @@ public class XMLRead extends DefaultHandler {
 	private boolean isBlack = true, isForClientSide = false;
 	private List<AbstractTool> aTools;
 	
+	//Constructor for the server calculation 
 	public XMLRead(Board b, Colors myColor) {
 		this.board = b;
 		if(myColor == Colors.WHITE)
 			isBlack = false;
 	}
 	
+	//Constructor for client response that the server sent to the client
 	public XMLRead(Colors color) {
 		if(color == Colors.WHITE)
 			isBlack = false;
 		this.aTools = new ArrayList<AbstractTool>();
+		//-----------------------------//
 		this.isForClientSide = true;
+		//----------------------------//
 	}
 	
+	//Called for each element start
 	@Override
 	public void startElement(String uri, String localName, 
 			String qName, Attributes atts) {
@@ -41,6 +47,7 @@ public class XMLRead extends DefaultHandler {
 		}
 	}
 	
+	//Called for each element end
 	@Override
 	public void endElement(String uri, String localName, String qName) {
         if (qName.equalsIgnoreCase("color")) {
@@ -70,6 +77,7 @@ public class XMLRead extends DefaultHandler {
         	color = Colors.BLACK;
 	}
 	
+	//Creates Tool according to the fields values 
 	private void setTool() {
 		X += Board.WALL_SIZE;
 		Y += Board.WALL_SIZE;

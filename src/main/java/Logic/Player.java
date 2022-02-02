@@ -2,18 +2,11 @@ package Logic;
 
 import java.io.Serializable;
 
-/**
- * this class build for the players in the game.
- * all the type of players can move tools.
- * @author Administrator
- *
- */
-
+//Represents player in the game
 public class Player implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = 1L;
 	private Colors myColor;
-//	private Board board;
 	private String username;
 	private boolean isComputer = false;
 	
@@ -21,14 +14,6 @@ public class Player implements Serializable, Cloneable {
 		this.username = username;
 		this.isComputer = isComputer;
 	}
-	
-//	public void buildBoard() {
-//		this.board  = new Board(this);
-//	}
-//	
-//	public Board getBoard() {
-//		return this.board;
-//	}
 	
 	public String getUsername() {
 		return username;

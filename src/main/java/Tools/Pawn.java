@@ -36,9 +36,10 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 		myValue = 10;	
 	}
 	
+	// ASSUMPTION: there was a tool in front of the pawn - thereby there is a pointer to the pawn at least in one square.
+	// This function updates canMoveTo list due to opponent's tool movement out of the pawn scope.
 	public void addForwardMovement(Tool[][] tools, Point srcSquare) {
-		// basis assumption: there was a tool in front of the pawn - thereby there is a pointer to the pawn at least in one square.
-
+		
 		if(srcSquare.x == location.x + directions[0].x && srcSquare.y == location.y + directions[0].y) {
 			addMovement(this, new Point(location.x + directions[0].x, location.y + directions[0].y));
 			
@@ -54,6 +55,8 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 
 	}
 	
+	
+	//-----------------------Used for finding bug------------------------------//
 //	public boolean irRegularities(Tool[][] tools) {
 //		if(!(tools[location.x + directions[0].x][location.y + directions[0].y] instanceof Empty) &&
 //				pointListContains(tools[location.x + directions[1].x][location.y + directions[1].y].pawnsCanReach, location) )
@@ -61,17 +64,20 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 //		return false;
 //	}
 	
-	public boolean irRegularities(Tool[][] tools) {
-		if(tools[location.x + directions[0].x][location.y + directions[0].y] instanceof Empty &&
-				tools[location.x + directions[1].x][location.y + directions[1].y] instanceof Empty &&
-				canMoveTo.size() == 0 )
-			return true;
-		return false;
-	}
+//	public boolean irRegularities(Tool[][] tools) {
+//		if(tools[location.x + directions[0].x][location.y + directions[0].y] instanceof Empty &&
+//				tools[location.x + directions[1].x][location.y + directions[1].y] instanceof Empty &&
+//				canMoveTo.size() == 0 )
+//			return true;
+//		return false;
+//	}
+	//-------------------------------------------------------------------------//
 	
+	
+	// Basic assumption: there is a tool in front of this pawn.
+	// This function updates canMoveTo list due to movement of opponent's tool to square that pawn can reach.
 	public void removeForwardMovement(Tool[][] tools, Point test) {
 		
-		//Basis assumption: there is a tool in front of this pawn.
 		if(!(tools[location.x + directions[0].x][location.y + directions[0].y] instanceof Empty)) {
 			// there is a tool one step ahead of the pawn
 			if(!alreadyMoved) //if the tool have the ability to walk two steps - remove his pointer from the second square
@@ -88,12 +94,15 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 		
 	}
 	
+	//This tool threat the empty square v.source
+	//Therefore this function add v.source to threatenedEmptySquares
 	public void addThreatenedEmptySquares(Vector v) {
 		Point dest = v.getSource();
 		threatenedEmptySquares.add(v);
 		System.out.println(this + "threatenedEmptySquares.add " + dest.x + " " + dest.y);
 	}
 	
+	//Empty the list threatenedEmptySquares 
 	public void removeAllThreatenedEmptySquares() {
 		int size = threatenedEmptySquares.size();
 		for(int i = 0; i < size; i++) {
@@ -103,6 +112,7 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 		}
 	}
 	
+	//Update Ithreat, Iprotect, ThreatsOnMe, ProtectedByOthers, canMoveTo, pawnCanReach,threatenedEmptySquares lists.
 	public void updateLists(Tool[][] tools) {
 		Point locationClone = new Point(location.x, location.y);
 		boolean twoStepMove = false;
@@ -144,6 +154,7 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 		}
 	}
 	
+	//Make move of this tool to 'destination'
 	public void moveTo(Tool[][] tools, Point destination) {
 		
 		alreadyMoved = true;		
@@ -154,6 +165,7 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 		this.numberOfMoves++;
 	}
 	
+	//Undo move
 	@Override
  	public void goBackTo(Tool[][] tools, Point destination) {
 		if(numberOfMoves > 0) {
@@ -173,6 +185,8 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 			alreadyMoved = false;
  	}
 	
+ 	//Will set the location of this tool to 'destination' in tools array.
+ 	//Updates all the neighbors lists with the relevant information.
 	public void placeAt(Tool[][] tools, Point destination) {
 		
 		Tool destSquare = tools[destination.x][destination.y];	
@@ -201,8 +215,10 @@ public class Pawn extends OneStepTool implements MoveAndStop, Cloneable {
 		
 	}
 	
+	//Abort the influence of this tool on the board
 	public void diminishToolImpact(Tool[][] tools, Tool tool) {
 
+		//Going through threatsOnMe and protectedByOthers lists objects and diminish the impact of the current tool
 		diminishImpactOnList(tools, tool, tool.threatsOnMe, true);
 		diminishImpactOnList(tools, tool, tool.protectedByOthers, false);
 		

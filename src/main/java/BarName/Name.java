@@ -10,6 +10,7 @@ import Frames.GeneralJFrame;
 
 import javax.swing.JLabel;
 
+//Display name label in the bar component.
 public class Name extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -19,8 +20,12 @@ public class Name extends JPanel {
 
 	public Name(boolean isLeft, String name,int posX, int posY) {
 		this.isLeft = isLeft;
+		
+		//top left corner
 		this.posX = posX;
 		this.posY = posY;
+		
+		//Add label component for the name
 		this.lblBackground = new JLabel(name);
 		setOpaque(false);
 		draw();
@@ -38,6 +43,7 @@ public class Name extends JPanel {
 	    return image;
 	}
 	
+	//Display background
 	public void draw() {
 		if(isLeft)
 			setBounds((int)((posX + 52) * GeneralJFrame.widthProp) ,(int)((posY + 130) * GeneralJFrame.heightProp), (int)(160 * GeneralJFrame.widthProp),

@@ -52,27 +52,33 @@ public class King extends OneStepTool implements MoveAndStop {
 		updateLists(tools);
 	}
 	
+	//Update Ithreat, Iprotect, ThreatsOnMe, ProtectedByOthers, canMoveTo, pawnCanReach,threatenedEmptySquares lists.
 	public void updateLists(Tool[][] tools) {
 		Point locationClone = new Point(location.x, location.y);
 		for(Point dir: directions) {
 			Point toolCoordinates = new Point(locationClone.x + dir.x, locationClone.y + dir.y);
-			Tool destinationSquare = tools[toolCoordinates.x] [toolCoordinates.y];			
+			Tool destinationSquare = tools[toolCoordinates.x] [toolCoordinates.y];	
+			
+			//Reached to Wall object - continue to the next object
 			if(destinationSquare instanceof Wall)
 				continue;
 
 			boolean canMoveAlready = pointListContains(canMoveTo, toolCoordinates);
 			boolean protectAlready = vectorListContains(Iprotect, toolCoordinates);
 			
+			//Prevent from kings to get near each other
 			if(opponentKing != null && Math.abs(toolCoordinates.x - opponentKing.x) <=1 && Math.abs(toolCoordinates.y - opponentKing.y) <=1 ) {
 				if(canMoveAlready)
 					removePotenialMove(tools, toolCoordinates, destinationSquare, canMoveAlready, protectAlready);
 				continue;
 			}
+			//If the destination square has threats - remove it from available moves.
 			if(destinationSquare.hasThreats(color)) {
 				if(canMoveAlready || protectAlready)
 					removePotenialMove(tools, toolCoordinates, destinationSquare, canMoveAlready, protectAlready);
 				continue;
 			}
+			//If the destination square has threats - remove it from available moves.
 			if(threatsOnMe.size() > 0 ) {
 				boolean conditionMet = false;
 				for(Vector v: threatsOnMe) {
@@ -87,6 +93,7 @@ public class King extends OneStepTool implements MoveAndStop {
 				if(conditionMet)
 					continue;
 			}
+			//If the conditions of short rooking does not exists - don't include the movement option.
 			if(dir instanceof ShortRooking) 
 				if(!(  !alreadyMoved && tools[locationClone.x][9] instanceof Rook && !((Rook)tools[locationClone.x][9]).isAlreadyMove() 
 						&& tools[locationClone.x][8] instanceof Empty && tools[locationClone.x][7] instanceof Empty) ) {
@@ -94,6 +101,7 @@ public class King extends OneStepTool implements MoveAndStop {
 						removePotenialMove(tools, toolCoordinates, destinationSquare, canMoveAlready, protectAlready);
 					continue;
 				}
+			//If the conditions of long rooking does not exists - don't include the movement option.
 			if(dir instanceof LongRooking) 
 				if(!(  !alreadyMoved && tools[locationClone.x][2] instanceof Rook && !((Rook)tools[locationClone.x][2]).isAlreadyMove()
 						&& tools[locationClone.x][3] instanceof Empty && tools[locationClone.x][4] instanceof Empty && tools[locationClone.x][5] instanceof Empty)) {
@@ -101,7 +109,7 @@ public class King extends OneStepTool implements MoveAndStop {
 						removePotenialMove(tools, toolCoordinates, destinationSquare, canMoveAlready, protectAlready);
 					continue;
 				}
-			
+			//Add empty destination if it is not exists in canMoveTo list.
 			if(destinationSquare instanceof Empty ) {
 				if(!canMoveAlready) {
 					addMovement(this, toolCoordinates); 
@@ -110,6 +118,7 @@ public class King extends OneStepTool implements MoveAndStop {
 				continue;
 			}
 			if(!(dir instanceof ShortRooking || dir instanceof LongRooking)) {
+				//Update Iprotect, protectedByOthers
 				if(destinationSquare.getColor() == color) {
 					if(!protectAlready) {
 						Vector newProtection = new Vector(toolCoordinates, dir);
@@ -118,6 +127,7 @@ public class King extends OneStepTool implements MoveAndStop {
 					}
 					continue;
 				}
+				//Update Ithreat, ThreatsOnMe
 				if(destinationSquare.oppositeColor() == color) {
 					if(!canMoveAlready) {
 						Vector newThreat = new Vector(toolCoordinates, dir);
@@ -128,10 +138,12 @@ public class King extends OneStepTool implements MoveAndStop {
 					continue;
 				}
 			}
+			//any other case - remove
 			removePotenialMove(tools, toolCoordinates, destinationSquare, canMoveAlready, protectAlready);
 		}
 	}
 	
+	//Removing potential move and it's affects on destination squares lists
 	private void removePotenialMove(Tool[][] tools, Point toolCoordinates, Tool destinationSquare, boolean canMoveAlready, boolean protectAlready) {
 		if(canMoveAlready) {
 			removeMove(this, toolCoordinates);
@@ -148,6 +160,7 @@ public class King extends OneStepTool implements MoveAndStop {
 		}
 	}
 	
+	// make move to 'destination'
  	public void moveTo(Tool[][] tools, Point destination) {
 		
  		alreadyMoved = true;
@@ -160,6 +173,7 @@ public class King extends OneStepTool implements MoveAndStop {
 		this.numberOfMoves++;
 	}
  	
+ 	// Undo move 
 	@Override
  	public void goBackTo(Tool[][] tools, Point destination) {
 		if(numberOfMoves > 0) {
@@ -176,6 +190,8 @@ public class King extends OneStepTool implements MoveAndStop {
 		}
 	}
 	
+ 	//Will set the location of this tool to 'destination' in tools array.
+ 	//Updates all the neighbors lists with the relevant information.
 	public void placeAt(Tool[][] tools, Point destination) {
 		
 		Tool destSquare = tools[destination.x][destination.y];	
@@ -203,6 +219,7 @@ public class King extends OneStepTool implements MoveAndStop {
 		updateRemoteLists(tools,protectedByOthers);
 	}
 		
+	//checking if there is Check and returns the answer.
 	public Check isCheck() {
 		if(threatsOnMe.size() > 0 && color == Colors.WHITE)
 			return Check.onWHITE;
@@ -211,27 +228,40 @@ public class King extends OneStepTool implements MoveAndStop {
 		return Check.NONE;
 	}
 	
+	//checking if there is Mate and returns the answer.
 	public Mate isMate(Tool[][] tools) {
+		
+		//If the king can move - it's not mate.
 		if(canMoveTo.size() != 0)
 			return Mate.NONE;
+		
+		//If the king is not threatened - it's not mate.
 		if(threatsOnMe.size() == 0)
 			return Mate.NONE;
+		
+		//If the king can't move and has at least 2 different threats - it's mate.
 		if(threatsOnMe.size() >= 2) {
 			if(color == Colors.WHITE)
 				return Mate.onWHITE;
 			else
 				return Mate.onBLACK;
 		}	
+		//Reaching this far says - the king can't move and have only one threat
 		for(Vector v: threatsOnMe) {
 			Point threatCoordinates = v.getSource();
 			Tool threateningTool = tools[threatCoordinates.x][threatCoordinates.y];
+			
+			//If the threat has threats - It's not mate.
 			if(threateningTool.threatsOnMe.size() > 0)
 				return Mate.NONE;
+			
+			//If the threat has no threats 
 			if(threateningTool instanceof LinearTool) {
 				Point dir = v.getOppositeDirection();
 				int i = 1;
 				threateningTool = tools[threatCoordinates.x + dir.x * i][threatCoordinates.y + dir.y * i];
 				while(threateningTool.location.x != location.x  && threateningTool.location.y != location.y) {
+					//If there is option to block the threat - it's not mate.
 					if(((Empty)threateningTool).hasThreats(color == Colors.WHITE? Colors.BLACK:Colors.WHITE) )
 						return Mate.NONE;
 					i++;
@@ -239,13 +269,15 @@ public class King extends OneStepTool implements MoveAndStop {
 				}
 			}
 		}
-
+		
+		//Otherwise - it's mate.
 		if(color == Colors.WHITE)
 			return Mate.onWHITE;
 		else
 			return Mate.onBLACK;
 	}
 	
+	//Undo Rooking
 	public void abortRooking(Tool[][] tools, Point dest) {
 		if(dest.y - location.y == 2)
 		{
@@ -265,6 +297,7 @@ public class King extends OneStepTool implements MoveAndStop {
 		}
 	}
 	
+	//Make Rooking
 	public void handleRooking(Tool[][] tools, Point dest) {
 		if(dest.y - location.y == 2)
 		{

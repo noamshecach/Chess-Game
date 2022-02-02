@@ -22,7 +22,7 @@ public class Tree
 	private final int futureMoves = 4;
 //	private Stack <Board> boardStack;
 	private List<Point> middleBoard = new ArrayList<Point>();
-	private Hashtable<Long, Integer> knownPositions = new Hashtable<>((int)Math.pow(2,20));
+	//private Hashtable<Long, Integer> knownPositions = new Hashtable<>((int)Math.pow(2,20));
 	
 	public Tree()
 	{
@@ -34,27 +34,33 @@ public class Tree
 		middleBoard.add(new Point(6,6));
 	}
 	
-	public boolean checkPawn(Tool[][] tool, List<Tool> tools) {
-		for(Tool t: tools) {
-			if(t instanceof Pawn)
-				if(((Pawn)t).irRegularities(tool))
-					return true;
-		}
-		return false;
-	}
+	//-----------------------Used for finding bug------------------------------//
+//	public boolean checkPawn(Tool[][] tool, List<Tool> tools) {
+//		for(Tool t: tools) {
+//			if(t instanceof Pawn)
+//				if(((Pawn)t).irRegularities(tool))
+//					return true;
+//		}
+//		return false;
+//	}
+	//-------------------------------------------------------------------------//
 	
 	public void setNumberOfNodes(int num) {
 		this.nodesNum = num;
 	}
 		
+	//Calculates the next step of computer.
 	public TreeNode minMax(Board board, int level, double alpha, double beta, boolean maximizingPlayer) {
 		Colors turn = board.getCurrentPlayerColor();
+		
+		//If we reached to leaf or mate - evaluate the position and return it.
 		if(level == futureMoves || board.getMate() != Mate.NONE) {
 			TreeNode node = new TreeNode(maximizingPlayer);
 			node.setEvaluation(evaluationFunction(board));
 			return node;
 		}
 		
+		//Get the list of all tools with the color of the current turn
 		List<Tool> tools = new ArrayList<Tool>(board.getTools(turn));
 		int row, col;
 		TreeNode currNode = new TreeNode(maximizingPlayer);
@@ -70,24 +76,39 @@ public class Tree
 			
 			List<Point> canMoveTo = new ArrayList<Point>(board.getRestrictedCanMoveToList(row - Board.WALL_SIZE,col - Board.WALL_SIZE));
 			
+			//For each available move of the tool t:
 			for(Point destSquareCoordinates: canMoveTo){		
 				nodesNum++;
 				Tool eatenTool = board.getToolExec(destSquareCoordinates.x, destSquareCoordinates.y);
 				Tool source = board.getToolExec(row, col);
 				
 //				System.out.println("\n\n\n\nperform " + "(" + row + "," + col + ") to (" + destSquareCoordinates.x + "," + destSquareCoordinates.y + ")");
+				
+				//Make move
 				board.makeMove(t.getLocation() ,destSquareCoordinates);
+				
+				//Calculate Zobrist hash
 				long hash = Zobrist.hash;
+				
 //				Check check = board.getCheck();
 //				Mate mate = board.getMate();
+				
+				//Change turn
 				board.setCurrentPlayerColor(board.getCurrentPlayerColor() == Colors.WHITE ? Colors.BLACK:Colors.WHITE);
 				
+				//Call next tree level
 				TreeNode son = minMax(board,level + 1,alpha, beta, !maximizingPlayer);
+				
+				//change turn
 				board.setCurrentPlayerColor(board.getCurrentPlayerColor() == Colors.WHITE ? Colors.BLACK:Colors.WHITE);
 				
 //				System.out.println("\n\n\n\nrestore " + "(" + row + "," + col + ") to (" + destSquareCoordinates.x + "," + destSquareCoordinates.y + ")");
+				
+				//Undo move
 				board.restoreMove(destSquareCoordinates, new Point(row, col), source, eatenTool, hash); 
 				
+				
+				// Min-Max decision & pruning
 				if(maximizingPlayer) {
 					if(currNode.getEvaluation() < son.getEvaluation()) {
 						currNode.setToolIdx(new Point(row ,col));
@@ -237,6 +258,7 @@ public class Tree
 		return score;
 	}
 	
+	//This function evaluate the current position and returns it's evaluation.
 	double evaluationFunction(Board board)
 	{
 		double whiteScore = 0, blackScore = 0;

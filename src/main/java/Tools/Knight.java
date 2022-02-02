@@ -1,8 +1,6 @@
 package Tools;
 import java.awt.Point;
-
 import Logic.Colors;
-import Logic.Vector;
 import MoveTypes.MoveAndStop;
 
 /**

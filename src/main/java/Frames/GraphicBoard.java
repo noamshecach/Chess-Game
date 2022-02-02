@@ -34,8 +34,11 @@ public class GraphicBoard extends GeneralJFrame  {
 	private JLabel[][] foreground = new JLabel[size][size];
     private BarName barleft, barright;
     private Chat chat;
+    
+    //Helps to fix image indentations on the screen
     private Hashtable<ImageIcon, Integer> fixToolPosition = new Hashtable<>();
 	
+    //Images
 	private ImageIcon retireImg = new ImageIcon(getClass().getResource("/media/game/retire.png"));
 	private ImageIcon blackSqImg = new ImageIcon(getClass().getResource("/media/game/Parts/OriginalBlack.png"));
 	private ImageIcon whiteSqImg = new ImageIcon(getClass().getResource("/media/game/Parts/OriginalWhite.png"));
@@ -44,6 +47,7 @@ public class GraphicBoard extends GeneralJFrame  {
 	private ImageIcon squareClickedImg = new ImageIcon(getClass().getResource("/media/game/Parts/frame.png"));
 	private ImageIcon possibleMovesImg = new ImageIcon(getClass().getResource("/media/game/Parts/possMov.png"));
 	private ImageIcon eatCaseImg = new ImageIcon(getClass().getResource("/media/game/Parts/eatCase.png"));
+	
     private int square_size = whiteSqImg.getIconWidth() + 1 ;
     private String username;
     private boolean isMyTurn;
@@ -52,30 +56,20 @@ public class GraphicBoard extends GeneralJFrame  {
 	public GraphicBoard(final ContactServer contactServer, String username, InitialSetup init) {
 		super("/media/game/GameScreen7.png");
 		try {
-			System.out.println("-------" + username);
+
 			this.username = username; 
 			this.contactServer = contactServer;
 			this.isMyTurn = init.getTurn();
 			this.myColor = init.getColor();
-			boolean isAgainstComputer = (init.getOpponentName().equals("Computer"));
 			
-			initalize(isAgainstComputer);
+			//Display labels, buttons etc.
+			initalizeComponents(init);
 
-			ButtonPressHandler mouseHandler = new ButtonPressHandler(this);
-			addLabel(exit, 49, 222, exitImg,mouseHandler);
-			addLabel(retire, 254,222, retireImg,mouseHandler);
-			addBarName(barleft, 0, 0); 
-	    	addBarName(barright, 1410, 0); 		    
-		    if(!isAgainstComputer)
-		    	addChat(30, 900, username, init.getOpponentName());
-			
-		    if(isMyTurn)
-		    	barleft.setShineBar();
-		    else
-		    	barright.setShineBar();
-			
+			//Display the board squares and the tools - init.getTools().
 			showBoard(init.getTools());
 			setVisible(true);
+			
+			//If it is not my turn - wait to the opponent response.
 			if(!isMyTurn) {
 				Thread t = new Thread() {
 					public void run() {
@@ -85,6 +79,7 @@ public class GraphicBoard extends GeneralJFrame  {
 				t.start();
 			}
 			
+			//Check if the opponent has retired.
 			isRetirement();
 		} 
 		catch (RemoteException e) { e.printStackTrace(); } 
@@ -93,6 +88,7 @@ public class GraphicBoard extends GeneralJFrame  {
 	
 	}	
 	
+	//Checks in a separate thread if the opponent has retired.
 	private void isRetirement() {
 		Thread t = new Thread() {
 			public void run() {
@@ -103,16 +99,37 @@ public class GraphicBoard extends GeneralJFrame  {
 		t.start();
 	}
 	
-	private void initalize(boolean isAgainstComputer) {
+	//Initialize the screen graphic components
+	private void initalizeComponents(InitialSetup init) 
+			throws RemoteException, MalformedURLException, NotBoundException {
+		
 		exit = new JLabel();
 		retire = new JLabel();
 		barleft = new BarName(true, contactServer.getUser(),0,0, contactServer, this, getLayeredPane());
+		boolean isAgainstComputer = (init.getOpponentName().equals("Computer"));
+		
 		if(isAgainstComputer)
 			barright = new BarName(false,1410,0,contactServer, this, getLayeredPane());
 		else
 			barright = new BarName(false, contactServer.getOpponentUser(),1410,0, contactServer, this, getLayeredPane());
+		
+		ButtonPressHandler mouseHandler = new ButtonPressHandler(this);
+		addLabel(exit, 49, 222, exitImg,mouseHandler);
+		addLabel(retire, 254,222, retireImg,mouseHandler);
+		addBarName(barleft, 0, 0); 
+    	addBarName(barright, 1410, 0); 
+    	
+    	//Initialize chat between users.
+	    if(!isAgainstComputer)
+	    	addChat(30, 900, username, init.getOpponentName());
+		
+	    if(isMyTurn)
+	    	barleft.setShineBar();
+	    else
+	    	barright.setShineBar();
 	}
 	
+	// Adds chat between the users
 	private void addChat(int posX, int posY, String username, String opponentName) throws RemoteException, MalformedURLException, NotBoundException {
 		chat = new Chat(posX, posY,  opponentName,  username, getLayeredPane());
 		getLayeredPane().add(chat, new Integer(4));
@@ -127,10 +144,7 @@ public class GraphicBoard extends GeneralJFrame  {
 		return barright;
 	}
 
-	/**
-	   * this function opens the window and shows 
-	   * the chess board.
-	   */
+	 //Display the board squares and the tools.
 	  void showBoard(List<AbstractTool> tools)
 	  {
 		    boolean flag = false;
@@ -138,23 +152,32 @@ public class GraphicBoard extends GeneralJFrame  {
 			String toolDescription;
 			Colors toolColor;
 			
+			//Display tools
 			for(AbstractTool tool: tools) {
+				//Initialize variables
 				posX = tool.getX();
 				posY= tool.getY();
 				toolDescription = tool.getType();
 				toolColor = tool.getColor();
 				BoardMouseHoverHandler hoverHandler = new BoardMouseHoverHandler(posX, posY);
+				
+				//Get the image of the tool
 				ImageIcon pic = new ImageIcon(getClass().getResource("/media/game/Parts/"+ toolColor +"/"+ toolDescription +".png"));
 				
+				//Set the image of the tool to foreground[posX][posY]
 				foreground[posX][posY] = new JLabel();
 				setToolPic(foreground[posX][posY], (startX) + posY * square_size, (startY + fixToolsOffset(toolDescription)) + posX * square_size, 
 						pic.getIconWidth(), pic.getIconHeight(), pic,hoverHandler);
+				
+				//Make pixel fix for specific tools.
 				addFixToolPosition(toolDescription, (ImageIcon)foreground[posX][posY].getIcon());
+				//Add color indicator to foreground object that has board's tool.
 				if(toolColor == Colors.WHITE)
 					foreground[posX][posY].setDisplayedMnemonic('W');
 				else
 					foreground[posX][posY].setDisplayedMnemonic('B');
 			}
+			//Display squares
 			for(int i = 0; i < 8; i++){
 				for(int z = 0; z < 8; z++){
 					background[i][z] = new JLabel();
@@ -171,6 +194,7 @@ public class GraphicBoard extends GeneralJFrame  {
 			}						
 	  }
 	  
+	  //Fix the position of the label (better image location)
 	  private int fixToolsOffset(String tool) {
 			if(tool.equals("King")) 
 				return -50;
@@ -183,6 +207,7 @@ public class GraphicBoard extends GeneralJFrame  {
 			return 0;	
 	  }
 	  
+	  //Put the pixel fixes in hash table in order to return to previous state when the tool will move.
 	  private void addFixToolPosition(String tool, ImageIcon pic) {
 			if(tool.equals("King")) 
 				fixToolPosition.put(pic, -50);
@@ -194,6 +219,7 @@ public class GraphicBoard extends GeneralJFrame  {
 				fixToolPosition.put(pic, 20);	
 	  }
 	  
+	  //Display the squares and tools images
 		public void setToolPic(JLabel label, int posX, int posY,int width, int height, ImageIcon image, 
 				MouseListener frame) {
 					
@@ -213,6 +239,7 @@ public class GraphicBoard extends GeneralJFrame  {
 				this.row = row;
 			}
 			
+			//Changing the background when the mouse is entered
 			public void mouseEntered(MouseEvent ev) {
 				if (ev.getSource() instanceof JLabel 
 						&& !(col == lastPressedCol && row == lastPressedRow) 
@@ -227,29 +254,33 @@ public class GraphicBoard extends GeneralJFrame  {
 				}
 			}
 			
+			//Changing the background back when the mouse exited the square.
 			public void mouseExited(MouseEvent ev) {
 				if (ev.getSource() instanceof JLabel 
 						&& !(col == lastPressedCol && row == lastPressedRow) 
 						&& (lastOptionalMoves == null ||
 						( !lastOptionalMoves.getCanMoveTo().contains(new Point(col, row))  
 						&& !lastOptionalMoves.getCanEat().contains(new Point(col, row)))))
-					getPreviousBackground(col, row);
+					setPreviousBackground(col, row);
 			}
 			
 			@Override
 			public void mouseClicked(MouseEvent ev) {
-				if(isMyTurn) {
+				if(isMyTurn) { 
+					//Second click
 			    	barright.setStandardBar();
 			    	barleft.setShineBar();
 					deleteMarkSquares();
-					getPreviousBackground(lastPressedCol, lastPressedRow);
+					setPreviousBackground(lastPressedCol, lastPressedRow);
 					if(col == lastPressedCol && row == lastPressedRow) {
+						//Same square were clicked
 						lastPressedCol = 1; lastPressedRow = 1;
 						return;
 					}
 					if(lastOptionalMoves != null &&
 							(lastOptionalMoves.getCanMoveTo().contains(new Point(col, row)) ||
 						lastOptionalMoves.getCanEat().contains(new Point(col, row))	)) { 
+						//Movement procedure
 						Movement move = contactServer.performeMove(new Point(lastPressedCol,lastPressedRow ), new Point(col,row));
 						performeMove(lastPressedRow,lastPressedCol, row, col, move);
 						if(move.isRooking())
@@ -266,20 +297,22 @@ public class GraphicBoard extends GeneralJFrame  {
 				    	};
 				    	t.start();
 					}else {
-//						if((myColor == Colors.WHITE && ((JLabel)ev.getSource()).getDisplayedMnemonic() == 'W')  || 
-//								(myColor == Colors.BLACK && ((JLabel)ev.getSource()).getDisplayedMnemonic() == 'B')) {
+						if((myColor == Colors.WHITE && ((JLabel)ev.getSource()).getDisplayedMnemonic() == 'W')  || 
+								(myColor == Colors.BLACK && ((JLabel)ev.getSource()).getDisplayedMnemonic() == 'B')) {
+							//First Click - display available options
 							changeBackground(squareClickedImg, col, row);
 							AvailableMoves moves = contactServer.getPossibleMoves(col, row );
 							markSquares(moves);
 							lastPressedCol = col;
 							lastPressedRow = row;
-//						}
+						}
 					}
 				}
 			}
 			
 		}
 		
+		//This function waits for the opponent move and display it.
 		private void displayOpponentMove(Movement move) {
 			Point[] lastMove = move.getLastMove(); 
 			performeMove((int)(lastMove[0].getY()),(int)(lastMove[0].getX()), (int)(lastMove[1].getY()),(int)(lastMove[1].getX()), move);
@@ -291,6 +324,7 @@ public class GraphicBoard extends GeneralJFrame  {
 			getLeftBar().setShineBar();
 		}
 		
+		//Display the second movement of the opponent Rooking.
 		private void executeOpponentRooking(int xPos, Movement movement) {
 			if(xPos == 2)
 				performeMove(0,0,3,0, movement);
@@ -298,6 +332,7 @@ public class GraphicBoard extends GeneralJFrame  {
 				performeMove(7,0,5,0, movement);
 		}
 		
+		//Display the second movement of Rooking.
 		private void executeRooking(int xPos, Movement movement) {
 			if(xPos == 2)
 				performeMove(0,7,3,7, movement);
@@ -305,6 +340,7 @@ public class GraphicBoard extends GeneralJFrame  {
 				performeMove(7,7,5,7, movement);
 		}
 		
+		//Displays the move on the screen
 		private void performeMove(int srcRow, int srcCol, int destRow, int destCol, Movement movement) {
 			foreground[destCol][destRow].setDisplayedMnemonic(foreground[srcCol][srcRow].getDisplayedMnemonic());
 			foreground[srcCol][srcRow].setDisplayedMnemonic('O');
@@ -338,6 +374,7 @@ public class GraphicBoard extends GeneralJFrame  {
 				fixToolPosition.put((ImageIcon)foreground[destCol][destRow].getIcon(), fix);
 		}
 		
+		//Display relevant messages for check, mate, draw.
 		private void checkEndingFlags(Movement movement) {
 			if(movement.isMate() == Mate.Draw) {
 				try {  
@@ -369,20 +406,24 @@ public class GraphicBoard extends GeneralJFrame  {
 			if(movement.isChess() != Check.NONE) 
 				Message.displayCheck();
 		}
-				
-		private void getPreviousBackground(int col, int row) {
+		
+		//set the background of square [col][row] to its previous image.
+		private void setPreviousBackground(int col, int row) {
 			if((col + row) % 2 != 0) 
 				changeBackground(whiteSqImg, col, row);
 			else 
 				changeBackground(blackSqImg, col, row);
+			
 		}
 		
+		//Changes the background of the square [col][row] to the specified image
 		private void changeBackground(ImageIcon picture, int col, int row) {
 			background[col][row].setIcon(scaleImage(picture, 
 					(int)(picture.getIconWidth()  * widthProp), 
 					(int)(picture.getIconHeight() * heightProp)));
 		}
 		
+		//This function delete the marked squares.
 		public void deleteMarkSquares() {
 			if(lastOptionalMoves == null)
 				return;
@@ -400,6 +441,7 @@ public class GraphicBoard extends GeneralJFrame  {
 			}
 		}
 		
+		//This function change the background of the squares that the tool can access.
 		public void markSquares(AvailableMoves moves) {
 			for (Point dir : moves.getCanMoveTo()) 
 				changeBackground(possibleMovesImg, dir.x, dir.y);
