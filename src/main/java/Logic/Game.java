@@ -15,7 +15,7 @@ public class Game implements Serializable, Cloneable {
 	private int gameIndex = 0, amount =0;
 	private boolean againstComputer = false;
 	private Movement lastMove;
-	private String retiredPlayer;
+	private String retiredPlayer = "";
 	
 		
 //	public Game(String name, int gameIndex, int amount) {

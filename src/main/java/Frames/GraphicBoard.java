@@ -90,9 +90,15 @@ public class GraphicBoard extends GeneralJFrame  {
 	
 	//Checks in a separate thread if the opponent has retired.
 	private void isRetirement() {
+		final GraphicBoard frame = this;
 		Thread t = new Thread() {
 			public void run() {
-				try {  contactServer.isOpponentRetire();  } 
+				try {  
+					if(contactServer.isOpponentRetire()) {
+						RetireButtonHandler handler = new RetireButtonHandler(frame);
+						Message.displayCheckMate(handler, true);
+					}
+				} 
 				catch (InterruptedException | RemoteException e) { e.printStackTrace(); }
 			}
 		};
@@ -381,7 +387,6 @@ public class GraphicBoard extends GeneralJFrame  {
 					contactServer.displayDrawMessage(); 
 					RetireButtonHandler handler = new RetireButtonHandler(this);
 					Message.displayDraw(handler);
-
 				} 
 				catch (RemoteException e) { e.printStackTrace(); }
 			}
@@ -460,15 +465,7 @@ public class GraphicBoard extends GeneralJFrame  {
 				
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if(exit == arg0.getSource()) {
-					try {  
-						contactServer.retire(); 
-						ExitButtonHandler handler = new ExitButtonHandler();
-						Message.displayCheckMate(handler,false);
-					} 
-					catch (RemoteException e) {e.printStackTrace();} 
-				}
-				if(retire == arg0.getSource()) {
+				if(retire == arg0.getSource() || exit == arg0.getSource()) {
 					try {  
 						contactServer.retire(); 
 						RetireButtonHandler handler = new RetireButtonHandler(gb);
@@ -479,7 +476,7 @@ public class GraphicBoard extends GeneralJFrame  {
 			}
 		}
 		
-		private class RetireButtonHandler extends MouseAdapter {
+		public class RetireButtonHandler extends MouseAdapter {
 
 			private JFrame jf;
 			
@@ -494,11 +491,4 @@ public class GraphicBoard extends GeneralJFrame  {
 			}
 		}
 
-		private class ExitButtonHandler extends MouseAdapter {
-			
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				System.exit(0);
-			}
-		}
 }

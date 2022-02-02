@@ -21,6 +21,7 @@ import JMS.CreateQueue;
 import Logic.Board;
 import Logic.Colors;
 import Logic.Game;
+import Logic.Player;
 import Logic.XMLRead;
 import SentObjects.AbstractTool;
 import SentObjects.AvailableMoves;
@@ -291,11 +292,19 @@ public class ServerService extends UnicastRemoteObject implements IServerService
 	
 	@Override
 	public boolean isOponnentRetire(String myUsername, int gameIdx) throws InterruptedException {
+		
+		String opponentUserName = "";
+		Player[] playerNames = games.get(gameIdx).getPlayers(); 
+		if(playerNames[0].getUsername().equals(myUsername)) {
+			opponentUserName = playerNames[1].getUsername();
+		}else
+			opponentUserName = playerNames[0].getUsername();
+		
 		synchronized(games.get(gameIdx).getPlayers()) {
 			games.get(gameIdx).getPlayers().wait();
-			if(games.get(gameIdx).getRetiredPlayer().equals(myUsername))
-				return false;
-			return true;
+			if(games.get(gameIdx).getRetiredPlayer().equals(opponentUserName))
+				return true;
+			return false;
 		}
 	}
 	

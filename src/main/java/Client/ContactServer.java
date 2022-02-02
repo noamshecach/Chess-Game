@@ -223,8 +223,8 @@ public class ContactServer {
 	}
 	
 	//Asks the server if the opponent retired.
-	public void isOpponentRetire() throws InterruptedException, RemoteException {
-		serverService.isOponnentRetire(username, gameIdx);
+	public boolean isOpponentRetire() throws InterruptedException, RemoteException {
+		return serverService.isOponnentRetire(username, gameIdx);
 	}
 
 	//Asks the server to update draw result in the DB for the user.
